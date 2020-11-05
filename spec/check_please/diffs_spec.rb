@@ -1,5 +1,3 @@
-require_relative "shared_contexts"
-
 RSpec.describe CheckPlease::Diffs do
   subject { described_class.new }
 

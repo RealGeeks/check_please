@@ -1,5 +1,3 @@
-require_relative "shared_contexts"
-
 RSpec.describe CheckPlease::Comparison do
   def invoke!(ref, can)
     CheckPlease::Comparison.perform(ref, can)
@@ -172,9 +170,25 @@ RSpec.describe CheckPlease::Comparison do
   end
 
   context "when given a complex data structure with more than one discrepancy" do
-    include_context "complex pair"
-    let(:reference) { complex_reference }
-    let(:candidate) { complex_candidate }
+    let(:reference) {
+      {
+        id:    42,
+        name:  "The Answer",
+        words: %w[ what do you get when you multiply six by nine ],
+        meta:  { foo: "spam", bar: "eggs", yak: "bacon" }
+      }
+    }
+    let(:candidate) {
+      {
+        id:    42,
+        name:  "Charlie",
+        #      ^^^^^^^^^
+        words: %w[ what do we get when I multiply six by nine dude ],
+        #                  ^^          ^                      ^^^^
+        meta:  { foo: "foo",              yak: "bacon" }
+        #             ^^^^^  ^^^^^^^^^^^^
+      }
+    }
 
     it "has the correct number of mismatches" do
       diffs = invoke!(reference, candidate)
