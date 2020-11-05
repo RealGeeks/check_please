@@ -12,13 +12,7 @@ RSpec.describe CheckPlease::Comparison do
     it "has one diff for the top-level mismatch" do
       diffs = invoke!(reference, candidate)
       expect( diffs.length ).to eq( 1 )
-
-      diffs[0].tap do |diff|
-        expect( diff.type      ).to eq( :mismatch )
-        expect( diff.path      ).to eq( "/" )
-        expect( diff.reference ).to eq( 42 )
-        expect( diff.candidate ).to eq( 43 )
-      end
+      expect( diffs[0] ).to eq_diff( :mismatch, "/", ref: 42, can: 43 )
     end
   end
 
@@ -30,12 +24,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the second-level mismatch" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.path      ).to eq( "/3" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( 5 )
-        end
+        expect( diffs[0] ).to eq_diff( :mismatch, "/3", ref: 3, can: 5 )
       end
     end
 
@@ -46,13 +35,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the missing element" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :missing )
-          expect( diff.path      ).to eq( "/3" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( nil )
-        end
+        expect( diffs[0] ).to eq_diff( :missing, "/3", ref: 3, can: nil )
       end
     end
 
@@ -63,13 +46,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the extra element" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :extra )
-          expect( diff.path      ).to eq( "/3" )
-          expect( diff.reference ).to eq( nil )
-          expect( diff.candidate ).to eq( 3 )
-        end
+        expect( diffs[0] ).to eq_diff( :extra, "/3", ref: nil, can: 3 )
       end
     end
   end
@@ -82,20 +59,8 @@ RSpec.describe CheckPlease::Comparison do
       it "has two diffs: one missing, one extra" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 2 )
-
-        diffs["/yak"].tap do |diff|
-          expect( diff.type      ).to eq( :missing )
-          expect( diff.path      ).to eq( "/yak" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( nil )
-        end
-
-        diffs["/quux"].tap do |diff|
-          expect( diff.type      ).to eq( :extra )
-          expect( diff.path      ).to eq( "/quux" )
-          expect( diff.reference ).to eq( nil )
-          expect( diff.candidate ).to eq( 3 )
-        end
+        expect( diffs["/yak"]  ).to eq_diff( :missing, "/yak",  ref: 3,   can: nil )
+        expect( diffs["/quux"] ).to eq_diff( :extra,   "/quux", ref: nil, can: 3 )
       end
     end
 
@@ -106,13 +71,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the mismatch" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :mismatch )
-          expect( diff.path      ).to eq( "/yak" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( 5 )
-        end
+        expect( diffs[0] ).to eq_diff( :mismatch, "/yak", ref: 3, can: 5 )
       end
     end
   end
@@ -125,20 +84,8 @@ RSpec.describe CheckPlease::Comparison do
       it "has two diffs: one missing, one extra" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 2 )
-
-        diffs["/bar"].tap do |diff|
-          expect( diff.type      ).to eq( :missing )
-          expect( diff.path      ).to eq( "/bar" )
-          expect( diff.reference ).to eq( [2,3,4] )
-          expect( diff.candidate ).to eq( nil )
-        end
-
-        diffs["/yak"].tap do |diff|
-          expect( diff.type      ).to eq( :extra )
-          expect( diff.path      ).to eq( "/yak" )
-          expect( diff.reference ).to eq( nil )
-          expect( diff.candidate ).to eq( [2,3,5] )
-        end
+        expect( diffs["/bar"] ).to eq_diff( :missing, "/bar", ref: [2,3,4], can: nil )
+        expect( diffs["/yak"] ).to eq_diff( :extra,   "/yak", ref: nil,     can: [2,3,5] )
       end
     end
 
@@ -149,13 +96,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the mismatch in the nested array elements" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :mismatch )
-          expect( diff.path      ).to eq( "/bar/3" )
-          expect( diff.reference ).to eq( 4 )
-          expect( diff.candidate ).to eq( 5 )
-        end
+        expect( diffs[0] ).to eq_diff( :mismatch, "/bar/3", ref: 4, can: 5 )
       end
     end
   end
@@ -169,19 +110,8 @@ RSpec.describe CheckPlease::Comparison do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 2 )
 
-        diffs["/1/yak"].tap do |diff|
-          expect( diff.type      ).to eq( :missing )
-          expect( diff.path      ).to eq( "/1/yak" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( nil )
-        end
-
-        diffs["/1/quux"].tap do |diff|
-          expect( diff.type      ).to eq( :extra )
-          expect( diff.path      ).to eq( "/1/quux" )
-          expect( diff.reference ).to eq( nil )
-          expect( diff.candidate ).to eq( 3 )
-        end
+        expect( diffs["/1/yak"]  ).to eq_diff( :missing, "/1/yak",  ref: 3,   can: nil )
+        expect( diffs["/1/quux"] ).to eq_diff( :extra,   "/1/quux", ref: nil, can: 3 )
       end
     end
 
@@ -192,13 +122,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the mismatch" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :mismatch )
-          expect( diff.path      ).to eq( "/1/yak" )
-          expect( diff.reference ).to eq( 3 )
-          expect( diff.candidate ).to eq( 5 )
-        end
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1/yak", ref: 3, can: 5 )
       end
     end
 
@@ -209,13 +133,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the missing hash" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :missing )
-          expect( diff.path      ).to eq( "/2" )
-          expect( diff.reference ).to eq( { bar: 2 } )
-          expect( diff.candidate ).to eq( nil )
-        end
+        expect( diffs[0] ).to eq_diff( :missing, "/2", ref: { bar: 2 }, can: nil )
       end
     end
 
@@ -226,13 +144,7 @@ RSpec.describe CheckPlease::Comparison do
       it "has one diff for the extra hash" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
-
-        diffs[0].tap do |diff|
-          expect( diff.type      ).to eq( :extra )
-          expect( diff.path      ).to eq( "/2" )
-          expect( diff.reference ).to eq( nil )
-          expect( diff.candidate ).to eq( { bar: 2 } )
-        end
+        expect( diffs[0] ).to eq_diff( :extra, "/2", ref: nil, can: { bar: 2 } )
       end
     end
   end
@@ -244,13 +156,7 @@ RSpec.describe CheckPlease::Comparison do
     it "has one diff for the top-level mismatch" do
       diffs = invoke!(reference, candidate)
       expect( diffs.length ).to eq( 1 )
-
-      diffs[0].tap do |diff|
-        expect( diff.type      ).to eq( :type_mismatch )
-        expect( diff.path      ).to eq( "/" )
-        expect( diff.reference ).to eq( [42] )
-        expect( diff.candidate ).to eq( 42 )
-      end
+      expect( diffs[0] ).to eq_diff( :type_mismatch, "/", ref: [42], can: 42 )
     end
   end
 
@@ -261,13 +167,7 @@ RSpec.describe CheckPlease::Comparison do
     it "has one diff for the top-level mismatch" do
       diffs = invoke!(reference, candidate)
       expect( diffs.length ).to eq( 1 )
-
-      diffs[0].tap do |diff|
-        expect( diff.type      ).to eq( :type_mismatch )
-        expect( diff.path      ).to eq( "/" )
-        expect( diff.reference ).to eq( 42 )
-        expect( diff.candidate ).to eq( [42] )
-      end
+      expect( diffs[0] ).to eq_diff( :type_mismatch, "/", ref: 42, can: [42] )
     end
   end
 
@@ -280,49 +180,12 @@ RSpec.describe CheckPlease::Comparison do
       diffs = invoke!(reference, candidate)
       expect( diffs.length ).to eq( 6 )
 
-      diffs["/name"].tap do |diff|
-        expect( diff.type      ).to eq( :mismatch )
-        expect( diff.path      ).to eq( "/name" )
-        expect( diff.reference ).to eq( "The Answer" )
-        expect( diff.candidate ).to eq( "Charlie" )
-      end
-
-      diffs["/words/3"].tap do |diff|
-        expect( diff.type      ).to eq( :mismatch )
-        expect( diff.path      ).to eq( "/words/3" )
-        expect( diff.reference ).to eq( "you" )
-        expect( diff.candidate ).to eq( "we" )
-      end
-
-      diffs["/words/6"].tap do |diff|
-        expect( diff.type      ).to eq( :mismatch )
-        expect( diff.path      ).to eq( "/words/6" )
-        expect( diff.reference ).to eq( "you" )
-        expect( diff.candidate ).to eq( "I" )
-      end
-
-      diffs["/words/11"].tap do |diff|
-        expect( diff.type      ).to eq( :extra )
-        expect( diff.path      ).to eq( "/words/11" )
-        expect( diff.reference ).to eq( nil )
-        expect( diff.candidate ).to eq( "dude" )
-      end
-
-      diffs["/meta/foo"].tap do |diff|
-        expect( diff.type      ).to eq( :mismatch )
-        expect( diff.path      ).to eq( "/meta/foo" )
-        expect( diff.reference ).to eq( "spam" )
-        expect( diff.candidate ).to eq( "foo" )
-      end
-
-      diffs["/meta/bar"].tap do |diff|
-        expect( diff.type      ).to eq( :missing )
-        expect( diff.path      ).to eq( "/meta/bar" )
-        expect( diff.reference ).to eq( "eggs" )
-        expect( diff.candidate ).to eq( nil )
-      end
+      expect( diffs["/name"]     ).to eq_diff( :mismatch, "/name",     ref: "The Answer", can: "Charlie" )
+      expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you",        can: "we" )
+      expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you",        can: "I" )
+      expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,          can: "dude" )
+      expect( diffs["/meta/foo"] ).to eq_diff( :mismatch, "/meta/foo", ref: "spam",       can: "foo" )
+      expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs",       can: nil )
     end
   end
-
 end
-
