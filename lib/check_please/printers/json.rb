@@ -9,17 +9,17 @@ module Printers
 
       build_string do |io|
         io.puts "["
-        io.puts @diffs.map { |diff| "  " + diff_json(diff) }.join(",\n")
+        io.puts @diffs.map { |diff| diff_json(diff) }.join(",\n")
         io.puts "]"
       end
     end
 
     private
 
-    def diff_json(diff)
-      h = Hash[ Diff::COLUMNS.map { |name| [ name, diff.send(name) ] } ]
+    def diff_json(diff, prefix = "  ")
+      h = diff.attributes
       json = ::JSON.pretty_generate(h)
-      json.gsub(/\n\s*/, " ")
+      prefix.to_s + json.gsub(/\n\s*/, " ")
     end
   end
 

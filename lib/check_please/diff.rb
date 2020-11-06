@@ -19,6 +19,10 @@ module CheckPlease
       candidate.inspect
     end
 
+    def attributes
+      Hash[ COLUMNS.map { |name| [ name, send(name) ] } ]
+    end
+
     def inspect
       s = "<"
       s << self.class.name
