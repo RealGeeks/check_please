@@ -1,9 +1,9 @@
-require "check_please/version"
-require "check_please/path"
-require "check_please/comparison"
-require "check_please/diff"
-require "check_please/diffs"
-require "check_please/printers"
+require_relative "check_please/version"
+require_relative "check_please/path"
+require_relative "check_please/comparison"
+require_relative "check_please/diff"
+require_relative "check_please/diffs"
+require_relative "check_please/printers"
 
 module CheckPlease
   class Error < StandardError; end

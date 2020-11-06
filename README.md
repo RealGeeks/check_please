@@ -31,8 +31,20 @@ data that's too big and complicated to scan through visually, but you do you!
 
 ## TODO
 
+* tweak table_print output to make sure long paths are visible
 * an executable is probably called for
 * more output formats, maybe?
+* read candidate from stdin
+* detect timestamps and compare after parsing?
+  * possibly support plugins for other folks to add custom coercions?
+* command line flags for :allthethings:!
+  * limit to first N
+  * sort by path?
+  * ignore sub-second precision in timestamps
+* display filters?  (e.g., { a: 1, b: 2 } ==> "Hash#3")
+  * shorter descriptions of values with different classes
+    (but maybe just the existing :type_mismatch diffs?)
+  * another "possibly support plugins" expansion point here
 
 ## Development
 

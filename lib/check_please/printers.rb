@@ -9,6 +9,7 @@ module CheckPlease
       table: Printers::TablePrint,
       json:  Printers::JSON,
     }
+    FORMATS = PRINTERS_BY_FORMAT.keys.sort
     DEFAULT_FORMAT = :table
 
     def self.render(diffs, format)
