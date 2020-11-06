@@ -39,6 +39,10 @@ CheckPlease uses a few words in a jargony way:
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
+### RSpec Matcher
+
+See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).
+
 ### From Within Ruby
 
 Create two JSON strings and pass them to `CheckPlease.render_diff`.  You'll get
