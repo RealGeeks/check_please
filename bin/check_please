@@ -33,10 +33,6 @@ Usage: #{__FILE__} <reference> <candidate> <options>
   opts.on("-f FORMAT", "--format FORMAT", "specify the format (available options: [#{formats}]") do |val|
     diff_opts[:format] = val
   end
-
-  # TODO: add '--limit=20'
-  # TODO: add options to ignore timestamp formatting and/or consider times equal within a delta
-  # TODO: add options of specific paths to ignore
 end
 
 

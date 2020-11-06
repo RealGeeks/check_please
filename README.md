@@ -20,10 +20,15 @@ Or install it yourself as:
 
 ## Usage
 
-At the moment, you can use this from Ruby.  Create two JSON strings and pass
-them to `CheckPlease.render_diff`.  You'll get back a third string containing a
-nicely formatted report of all the differences CheckPlease found in the two
-JSON strings.
+### CLI
+
+Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
+
+### From Within Ruby
+
+Create two JSON strings and pass them to `CheckPlease.render_diff`.  You'll get
+back a third string containing a nicely formatted report of all the differences
+CheckPlease found in the two JSON strings.  (See also:  ./usage_examples.rb.)
 
 (You can also parse the JSON strings yourself and pass the resulting data
 structures in, if you're into that.  I mean, I wrote this to help compare JSON
