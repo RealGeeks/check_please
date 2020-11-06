@@ -7,23 +7,6 @@ RSpec.describe CheckPlease do
 
   describe ".render_diff" do
     shared_examples ".render_diff" do
-      let(:expected_table) {
-        <<~EOF.strip
-          TYPE    | PATH | REFERENCE | CANDIDATE
-          --------|------|-----------|----------
-          missing | /foo | wibble    |
-          extra   | /bar |           | wibble
-        EOF
-      }
-      let(:expected_json) {
-        <<~EOF.strip
-          [
-            { "type": "missing", "path": "/foo", "reference": "wibble", "candidate": null },
-            { "type": "extra", "path": "/bar", "reference": null, "candidate": "wibble" }
-          ]
-        EOF
-      }
-
       it "can return a table using table_print" do
         actual = CheckPlease.render_diff(ref, can, format: :table)
 
@@ -46,16 +29,37 @@ RSpec.describe CheckPlease do
       end
     end
 
-    context "when given Ruby data structures" do
-      let(:ref) { { foo: "wibble" } }
-      let(:can) { { bar: "wibble" } }
-      include_examples ".render_diff"
-    end
+    context "for two very simple hashes" do
+      let(:expected_table) {
+        <<~EOF.strip
+          TYPE    | PATH | REFERENCE | CANDIDATE
+          --------|------|-----------|----------
+          missing | /foo | wibble    |
+          extra   | /bar |           | wibble
+        EOF
+      }
+      let(:expected_json) {
+        <<~EOF.strip
+          [
+            { "type": "missing", "path": "/foo", "reference": "wibble", "candidate": null },
+            { "type": "extra", "path": "/bar", "reference": null, "candidate": "wibble" }
+          ]
+        EOF
+      }
+      let(:ref_hash) { { foo: "wibble" } }
+      let(:can_hash) { { bar: "wibble" } }
 
-    context "when given JSON strings" do
-      let(:ref) { { foo: "wibble" }.to_json }
-      let(:can) { { bar: "wibble" }.to_json }
-      include_examples ".render_diff"
+      context "when given Ruby data structures" do
+        let(:ref) { ref_hash }
+        let(:can) { can_hash }
+        include_examples ".render_diff"
+      end
+
+      context "when given JSON strings" do
+        let(:ref) { ref_hash.to_json }
+        let(:can) { can_hash.to_json }
+        include_examples ".render_diff"
+      end
     end
 
     context "when given strings that aren't valid JSON" do
