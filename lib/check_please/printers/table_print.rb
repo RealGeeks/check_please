@@ -5,6 +5,8 @@ module Printers
 
   class TablePrint < Base
     def to_s
+      return "" if @diffs.empty?
+
       build_string do |io|
         switch_tableprint_io(io) do
           tp @diffs.to_a, *Diff::COLUMNS

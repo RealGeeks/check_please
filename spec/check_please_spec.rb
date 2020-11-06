@@ -62,6 +62,25 @@ RSpec.describe CheckPlease do
       end
     end
 
+    context "for two very simple hashes that are equal" do
+      let(:expected_table) { "" }
+      let(:expected_json) { "[]" }
+      let(:ref_hash) { { foo: "wibble" } }
+      let(:can_hash) { { foo: "wibble" } }
+
+      context "when given Ruby data structures" do
+        let(:ref) { ref_hash }
+        let(:can) { can_hash }
+        include_examples ".render_diff"
+      end
+
+      context "when given JSON strings" do
+        let(:ref) { ref_hash.to_json }
+        let(:can) { can_hash.to_json }
+        include_examples ".render_diff"
+      end
+    end
+
     context "when given strings that aren't valid JSON" do
       let(:ref) { "foo" }
       let(:can) { "bar" }

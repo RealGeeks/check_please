@@ -38,6 +38,7 @@ module CheckPlease
     extend Forwardable
     def_delegators :@list, *%i[
       each
+      empty?
       length
       map
       to_a

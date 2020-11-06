@@ -5,6 +5,8 @@ module Printers
 
   class JSON < Base
     def to_s
+      return "[]" if @diffs.empty?
+
       build_string do |io|
         io.puts "["
         io.puts @diffs.map { |diff| "  " + diff_json(diff) }.join(",\n")
