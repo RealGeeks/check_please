@@ -35,6 +35,10 @@ module CheckPlease
       self << Diff.new(type, ref, can, path)
     end
 
+    def data
+      @list.map(&:attributes)
+    end
+
     extend Forwardable
     def_delegators :@list, *%i[
       each
