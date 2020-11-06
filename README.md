@@ -1,4 +1,4 @@
-# CheckPlease
+# check_please
 
 Check for differences between two JSON strings (or Ruby data structures parsed from them).
 
@@ -38,6 +38,7 @@ data that's too big and complicated to scan through visually, but you do you!
 
 * rspec custom matcher (separate gem?)
 * command line flags for :allthethings:!
+  * --fail-fast
   * limit to first N
   * sort by path?
   * max depth (for iterative refinement?)
