@@ -12,6 +12,8 @@ module Printers
 
     private
 
+    attr_reader :diffs
+
     def build_string
       io = StringIO.new
       yield io

@@ -12,11 +12,11 @@ module Printers
     ]
 
     def to_s
-      return "" if @diffs.empty?
+      return "" if diffs.empty?
 
       build_string do |io|
         switch_tableprint_io(io) do
-          tp @diffs.data, *TP_OPTS
+          tp diffs.data, *TP_OPTS
         end
       end
     end
