@@ -144,6 +144,15 @@ _**Being primarily a Ruby developer, I'm quite ignorant of conventions in the
 JS community; if there's an existing convention for paths, please open an
 issue!**_
 
+#### Output Formats
+
+CheckPlease produces tabular output by default.  (It leans heavily on the
+amazing [table_print](http://tableprintgem.com) gem for this.)
+
+If you want to incorporate CheckPlease into some other toolchain, it can also
+print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
+`CheckPlease.render_diff`; in the CLI, use the `-f`/`--format` switch.
+
 ## TODO
 
 * command line flags for :allthethings:!
