@@ -28,9 +28,9 @@ CheckPlease uses a few words in a jargony way:
   We assume you're comparing two things because you want one of them to be like
   the other; the **reference** is what you're aiming for.
 * **Candidate** is always used to refer to some JSON you'd like to compare
-  against the **reference**.  __(We could've also used "sample," but it turns
+  against the **reference**.  _(We could've also used "sample," but it turns
   out that "reference" and "candidate" are the same length, which makes code
-  line up neatly in a monospaced font...)__
+  line up neatly in a monospaced font...)_
 * A **diff** is what CheckPlease calls an individual discrepancy between the
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
@@ -65,10 +65,10 @@ CheckPlease can also print these diffs as JSON to facilitate parsing.)
 
 An example would probably help here.
 
-__(NOTE: these examples may fall out of date with the code.  They're swiped
+_(NOTE: these examples may fall out of date with the code.  They're swiped
 from [the CLI integration spec](spec/cli_integration_spec.rb), so please
 consider that more authoritative than this README.  If you do spot a
-difference, please feel free to open an issue!)__
+difference, please feel free to open an issue!)_
 
 Given the following **reference** JSON:
 ```
@@ -114,10 +114,10 @@ CheckPlease defines:
   a value at the given path, but one value was an Array or a Hash and the other
   was not.  **When CheckPlease encounters a type mismatch, it does not compare
   anything "below" the given path.** producing a lot of "garbage" diffs.
-  __(Technical note:  CheckPlease uses a "recursive descent" strategy to
+  _(Technical note:  CheckPlease uses a "recursive descent" strategy to
   traverse the **reference** data structure, and it stops when it encounters a
   type mismatch in order to avoid producing a lot of "garbage" diff output.
-  Also, the way these get displayed is likely to change.)__
+  Also, the way these get displayed is likely to change.)_
 * **mismatch** means that both the **reference** and the **candidate** had a
   value at the given path, and neither value was an Array or a Hash.
 * "**extra**" means that, inside an Array or a Hash, the **candidate**
@@ -136,9 +136,9 @@ The second column contains a path expression.  This is extremely basic:
   for each element will be appended to their parent's path, and the values will
   be compared.
 
-__**Being primarily a Ruby developer, I'm quite ignorant of conventions in the
+_**Being primarily a Ruby developer, I'm quite ignorant of conventions in the
 JS community; if there's an existing convention for paths, please open an
-issue!**__
+issue!**_
 
 ## TODO
 
