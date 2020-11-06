@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Sam Livingston-Gray"]
   spec.email         = ["geeksam@gmail.com"]
 
-  spec.summary       = %q{Check for differences between two JSON strings (or Ruby data structures parsed from them).}
-  spec.description   = %q{Check for differences between two JSON strings (or Ruby data structures parsed from them).}
+  spec.summary       = %q{Check for differences between two JSON strings (or Ruby data structures parsed from them)}
+  spec.description   = %q{Check for differences between two JSON strings (or Ruby data structures parsed from them)}
   spec.homepage      = "https://github.com/RealGeeks/check_please"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
