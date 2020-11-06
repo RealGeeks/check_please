@@ -95,5 +95,28 @@ RSpec.describe CheckPlease do
         expect( actual ).to eq( expected )
       end
     end
+
+    context "for two hashes with relatively long keys" do
+      let(:ref) { { the_sun_is_a_mass_of_incandescent_gas_a_gigantic_nuclear_furnace: "where hydrogen is built into helium at a temperature of millions of degrees" } }
+      let(:can) { { the_sun_is_a_miasma_of_incandescent_plasma:                       "the sun's not simply made out of gas" } }
+      let(:expected_table) {
+        <<~EOF.strip
+          TYPE    | PATH                                                              | REFERENCE                      | CANDIDATE
+          --------|-------------------------------------------------------------------|--------------------------------|-------------------------------
+          missing | /the_sun_is_a_mass_of_incandescent_gas_a_gigantic_nuclear_furnace | where hydrogen is built int... |
+          extra   | /the_sun_is_a_miasma_of_incandescent_plasma                       |                                | the sun's not simply made o...
+        EOF
+      }
+      let(:expected_json) {
+        <<~EOF.strip
+          [
+            { "type": "missing", "path": "/the_sun_is_a_mass_of_incandescent_gas_a_gigantic_nuclear_furnace", "reference": "where hydrogen is built into helium at a temperature of millions of degrees", "candidate": null },
+            { "type": "extra", "path": "/the_sun_is_a_miasma_of_incandescent_plasma", "reference": null, "candidate": "the sun's not simply made out of gas" }
+          ]
+        EOF
+      }
+
+      include_examples ".render_diff"
+    end
   end
 end

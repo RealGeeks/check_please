@@ -9,7 +9,11 @@ module Printers
 
       build_string do |io|
         switch_tableprint_io(io) do
-          tp @diffs.to_a, *Diff::COLUMNS
+          tp @diffs.to_a,
+            :type,
+            { :path => { width: 250 } }, # if you hit this limit, you have other problems
+            :reference,
+            :candidate
         end
       end
     end
