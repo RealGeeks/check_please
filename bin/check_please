@@ -1,14 +1,20 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-
 require_relative '../lib/check_please'
 
-argv = ARGV.dup
+# quick helper for later
+@diff_opts = {}
 
-ref_file = argv.shift
-can_file = argv.shift
-diff_opts = {}
+def is_blank?(x)
+  x.to_s =~ /^\s*$/
+end
+
+
+
+##
+## Set up command-line flags here
+##
 
 @parser = OptionParser.new do |opts|
   opts.banner = <<~EOF
@@ -31,40 +37,98 @@ Usage: #{__FILE__} <reference> <candidate> <options>
   formats = CheckPlease::Printers::FORMATS.join(", ")
 
   opts.on("-f FORMAT", "--format FORMAT", "specify the format (available options: [#{formats}]") do |val|
-    diff_opts[:format] = val
+    @diff_opts[:format] = val
   end
 end
 
 
+##
+## Getting ready to parse flags.
+## if the user messes up, we'll stop immediately.
+##
 
-def print_help_and_exit
+def print_help_and_exit(message = nil)
+  puts "\n>>> #{message}\n\n" if message
   @parser.parse(%w[--help])
   exit # technically redundant but helps me feel better
 end
 
-def read_file(filename)
-  return nil if filename.to_s =~ /^\s*$/
-  File.read(filename)
-rescue Errno::ENOENT
-  # no such file, buddy
-  return nil
+def complain_and_exit(message)
+  puts "\n>>> #{message}\n\n"
+  exit
 end
 
-
-
-# First off, try to read in the files the user told us about...
-reference = read_file(ref_file)
-candidate = read_file(can_file) || $stdin.read
-
-print_help_and_exit if reference.to_s =~ /^\s*$/
-print_help_and_exit if candidate.to_s =~ /^\s*$/
-
 begin
-  @parser.parse(argv)
+  # Calling #parse! instead of #parse will "eat" recognized flags, leaving only filenames
+  # (aka "TIL I've been using ARGV all wrong")
+  @parser.parse!(ARGV)
 rescue OptionParser::InvalidOption, OptionParser::AmbiguousOption => e
   puts "\n>>> #{e.message}\n\n"
   print_help_and_exit
 end
 
-report = CheckPlease.render_diff(reference, candidate, **diff_opts)
+
+
+
+##
+## Okay!  We understood all the flags the user passed us, so let's move on to the files!
+##
+
+def read_file_or_exit!(filename)
+  File.read(filename)
+rescue Errno::ENOENT
+  complain_and_exit "Unable to read from #{filename}.  Did you typo it?"
+end
+
+# The first argument MUST be a filename.
+# If it's blank or the named file doesn't exist, HALT.
+def read_reference_from_filename_in_argv!
+  reference_name = ARGV.shift
+  if is_blank?(reference_name)
+    print_help_and_exit "It looks like you forgot the <reference> argument!"
+  end
+  read_file_or_exit!(reference_name)
+end
+
+def read_candidate_from_filename_in_argv__or__stdin!
+  # Now for the second argument.  It MAY be a filename; if given, the file must exist...
+  candidate_name = ARGV.shift
+  if is_blank?(candidate_name)
+    read_candidate_from_stdin_or_exit!
+  else
+    read_file_or_exit!(candidate_name)
+  end
+end
+
+def read_candidate_from_stdin_or_exit!
+  # Unfortunately, ARGF won't help us here because it doesn't seem to handle the
+  # case where there are some files followed by stdin.  Oy.
+  #
+  # However, we *can* check to see whether $stdin is a tty.  A quick experiment
+  # (see below) seems to confirm that $stdin.tty? is false when we're receiving
+  # piped data, and true otherwise.  That at least gives us the ability to detect
+  # when a user gave us one file and forgot (or ducked up?) the pipe.
+
+  if $stdin.tty?
+    print_help_and_exit "It looks like you forgot the <candidate> argument..."
+  else
+    return $stdin.read
+  end
+
+  # For posterity, here's the experiment:
+  #
+  #   $ ruby -e 'puts $stdin.tty? ? "YES YOU ARE A TTY" : "nope, no tty here"'
+  #   YES YOU ARE A TTY
+  #
+  #   $ cat foo | ruby -e 'puts $stdin.tty? ? "YES YOU ARE A TTY" : "nope, no tty here"'
+  #   nope, no tty here
+end
+
+
+reference = read_reference_from_filename_in_argv!
+candidate = read_candidate_from_filename_in_argv__or__stdin!
+
+
+
+report = CheckPlease.render_diff(reference, candidate, **@diff_opts)
 puts report

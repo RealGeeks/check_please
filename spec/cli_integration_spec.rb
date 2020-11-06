@@ -3,6 +3,14 @@ require 'timeout'
 
 RSpec.describe "bin/check_please executable" do
 
+  # these tests can hang if I screw up, which happens a lot, so...
+  TIMEOUT_AFTER = 2 # seconds
+  around do |example|
+    Timeout.timeout(TIMEOUT_AFTER) do
+      example.run
+    end
+  end
+
   context "for a ref/can pair with a few discrepancies" do
     let(:ref_file) { "spec/fixtures/forty-two-reference.json" }
     let(:can_file) { "spec/fixtures/forty-two-candidate.json" }
@@ -30,18 +38,22 @@ RSpec.describe "bin/check_please executable" do
       candidate_json = File.read(can_file)
 
       actual = nil # scope hack
-      Timeout.timeout(2) do
-        Open3.popen3( "bin/check_please #{ref_file}") do |stdin, stdout, stderr, wait_thr|
-          stdin.puts candidate_json
-          stdin.close
-          wait_thr.value # wait for process to finish
-          actual = stdout.read
-        end
+      Open3.popen3( "bin/check_please #{ref_file}") do |stdin, stdout, stderr, wait_thr|
+        stdin.puts candidate_json
+        stdin.close
+        wait_thr.value # wait for process to finish
+        actual = stdout.read
       end
 
       actual = strip_trailing_whitespace(actual)
 
       expect( actual ).to eq( expected )
+    end
+
+    specify "if the second filename is omitted AND the user didn't pipe anything in, executable prints --help and exits" do
+      actual = `bin/check_please #{ref_file}`
+      actual = strip_trailing_whitespace(actual)
+      expect( actual ).to match( /^Usage:/ )
     end
   end
 
