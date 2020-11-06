@@ -5,9 +5,12 @@ module CheckPlease
   # Custom collection class for Diff instances.
   # Can retrieve members using indexes or paths.
   class Diffs
-    def initialize
+    def initialize(diff_list = nil)
       @list = []
       @hash = {}
+      Array(diff_list).each do |diff|
+        self << diff
+      end
     end
 
     # this is probably a terrible idea, but this method:
@@ -32,9 +35,13 @@ module CheckPlease
       self << Diff.new(type, ref, can, path)
     end
 
-    def length
-      @list.length
-    end
+    extend Forwardable
+    def_delegators :@list, *%i[
+      each
+      length
+      map
+      to_a
+    ]
   end
 
 end

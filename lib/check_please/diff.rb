@@ -1,6 +1,8 @@
 module CheckPlease
 
   class Diff
+    CANONICAL_ORDER = %i[ type path reference candidate ]
+
     attr_reader :type, :reference, :candidate, :path
     def initialize(type, reference, candidate, path)
       @type      = type
@@ -20,9 +22,10 @@ module CheckPlease
     def inspect
       s = "<"
       s << self.class.name
+      s << " type=#{type}"
+      s << " path=#{path}"
       s << " ref=#{ref_display}"
       s << " can=#{can_display}"
-      s << " type=#{type}" if type
       s << ">"
       s
     end
