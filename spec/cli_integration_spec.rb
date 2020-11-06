@@ -9,14 +9,14 @@ RSpec.describe "bin/check_please executable" do
 
     let(:expected) {
       <<~EOF.strip
-        TYPE     | PATH      | REFERENCE  | CANDIDATE
-        ---------|-----------|------------|----------
-        mismatch | /name     | The Answer | Charlie
-        mismatch | /words/3  | you        | we
-        mismatch | /words/6  | you        | I
-        extra    | /words/11 |            | dude
-        missing  | /meta/bar | eggs       |
-        mismatch | /meta/foo | spam       | foo
+        TYPE          | PATH      | REFERENCE  | CANDIDATE
+        --------------|-----------|------------|-------------------------------
+        type_mismatch | /name     | The Answer | ["I am large, and contain m...
+        mismatch      | /words/3  | you        | we
+        mismatch      | /words/6  | you        | I
+        extra         | /words/11 |            | dude
+        missing       | /meta/bar | eggs       |
+        mismatch      | /meta/foo | spam       | foo
       EOF
     }
 

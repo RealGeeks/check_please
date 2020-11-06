@@ -1,6 +1,6 @@
 {
   "id": 42,
-  "name": "Charlie",
+  "name": [ "I am large, and contain multitudes." ],
   "words": [ "what", "do", "we", "get", "when", "I", "multiply", "six", "by", "nine", "dude" ],
   "meta": { "foo": "foo", "yak": "bacon" }
 }
