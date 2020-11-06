@@ -1,0 +1,6 @@
+{
+  "id": 42,
+  "name": "Charlie",
+  "words": [ "what", "do", "we", "get", "when", "I", "multiply", "six", "by", "nine", "dude" ],
+  "meta": { "foo": "foo", "yak": "bacon" }
+}

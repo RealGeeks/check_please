@@ -12,7 +12,7 @@ RSpec.describe CheckPlease do
 
         # table_print generates trailing whitespace, which is fine for display
         # but sucks for this test.  Get rid of it here, and not in the printer...
-        actual = actual.lines.map(&:rstrip).join("\n")
+        actual = strip_trailing_whitespace(actual)
 
         expect( actual ).to eq( expected_table )
       end

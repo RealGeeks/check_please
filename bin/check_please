@@ -20,6 +20,11 @@ Usage: #{__FILE__} <reference> <candidate> <options>
     <reference> is the name of a file to use as the reference.
     <candidate> is the name of a file to compare against the reference.
 
+    NOTE:  If the <candidate> arg is omitted, stdin will be used instead.
+    This allows you to copy candidate JSON to the clipboard and (on a Mac) do:
+
+      $ pbpaste | #{__FILE__} <reference>
+
   <options>:
 	EOF
 
@@ -35,12 +40,12 @@ Usage: #{__FILE__} <reference> <candidate> <options>
 end
 
 
+
 def print_help_and_exit
   @parser.parse(%w[--help])
   exit # technically redundant but helps me feel better
 end
 
-# First off, try to read in the files the user told us about...
 def read_file(filename)
   return nil if filename.to_s =~ /^\s*$/
   File.read(filename)
@@ -49,8 +54,14 @@ rescue Errno::ENOENT
   return nil
 end
 
-reference = read_file(ref_file) || print_help_and_exit
-candidate = read_file(can_file) || print_help_and_exit
+
+
+# First off, try to read in the files the user told us about...
+reference = read_file(ref_file)
+candidate = read_file(can_file) || $stdin.read
+
+print_help_and_exit if reference.to_s =~ /^\s*$/
+print_help_and_exit if candidate.to_s =~ /^\s*$/
 
 begin
   @parser.parse(argv)
