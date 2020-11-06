@@ -5,7 +5,7 @@ require_relative 'printers/table_print'
 module CheckPlease
 
   module Printers
-    FORMATS = {
+    PRINTERS_BY_FORMAT = {
       table: Printers::TablePrint,
       json:  Printers::JSON,
     }
@@ -13,7 +13,7 @@ module CheckPlease
 
     def self.render(diffs, format)
       format ||= DEFAULT_FORMAT
-      printer = FORMATS[format]
+      printer = PRINTERS_BY_FORMAT[format.to_sym]
       printer.render(diffs)
     end
   end
