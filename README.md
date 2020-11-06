@@ -36,7 +36,6 @@ data that's too big and complicated to scan through visually, but you do you!
 
 ## TODO
 
-* executable: read candidate from stdin
 * rspec custom matcher (separate gem?)
 * command line flags for :allthethings:!
   * limit to first N
