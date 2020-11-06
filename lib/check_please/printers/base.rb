@@ -9,6 +9,14 @@ module Printers
     def initialize(diffs)
       @diffs = diffs
     end
+
+    private
+
+    def build_string
+      io = StringIO.new
+      yield io
+      io.string.strip
+    end
   end
 
 end

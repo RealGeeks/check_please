@@ -1,7 +1,7 @@
 module CheckPlease
 
   class Diff
-    CANONICAL_ORDER = %i[ type path reference candidate ]
+    COLUMNS = %i[ type path reference candidate ]
 
     attr_reader :type, :reference, :candidate, :path
     def initialize(type, reference, candidate, path)

@@ -4,22 +4,24 @@ module CheckPlease
 module Printers
 
   class TablePrint < Base
-    TP_CONFIG = ::TablePrint::Config
-    COLS      = Diff::CANONICAL_ORDER
-
     def to_s
-      old_io = TP_CONFIG.io
-      io = StringIO.new
-      TP_CONFIG.io = io
+      build_string do |io|
+        switch_tableprint_io(io) do
+          tp @diffs.to_a, *Diff::COLUMNS
+        end
+      end
+    end
 
-      tp @diffs.to_a, *COLS
+    private
 
-      lines = io.string.lines
+    TP_CONFIG = ::TablePrint::Config
 
-      return lines.map(&:rstrip).join("\n")
-
+    def switch_tableprint_io(new_io)
+      @old_io = TP_CONFIG.io
+      TP_CONFIG.io = new_io
+      yield
     ensure
-      TP_CONFIG.io = old_io
+      TP_CONFIG.io = @old_io
     end
   end
 
