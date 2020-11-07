@@ -4,6 +4,7 @@ require_relative "check_please/comparison"
 require_relative "check_please/diff"
 require_relative "check_please/diffs"
 require_relative "check_please/printers"
+require_relative "check_please/cli"
 
 module CheckPlease
   class Error < StandardError; end
