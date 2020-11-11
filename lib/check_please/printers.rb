@@ -12,8 +12,8 @@ module CheckPlease
     FORMATS = PRINTERS_BY_FORMAT.keys.sort
     DEFAULT_FORMAT = :table
 
-    def self.render(diffs, format)
-      format ||= DEFAULT_FORMAT
+    def self.render(diffs, options = {})
+      format = options[:format] || DEFAULT_FORMAT
       printer = PRINTERS_BY_FORMAT[format.to_sym]
       printer.render(diffs)
     end

@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
 require_relative '../lib/check_please'
-CheckPlease::CLI.new(__FILE__).run
+CheckPlease::CLI.run(__FILE__)

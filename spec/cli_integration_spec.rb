@@ -3,19 +3,11 @@ require 'timeout'
 
 RSpec.describe "bin/check_please executable" do
 
-  # these tests can hang if I screw up, which happens a lot, so...
-  TIMEOUT_AFTER = 2 # seconds
-  around do |example|
-    Timeout.timeout(TIMEOUT_AFTER) do
-      example.run
-    end
-  end
-
   context "for a ref/can pair with a few discrepancies" do
     let(:ref_file) { "spec/fixtures/forty-two-reference.json" }
     let(:can_file) { "spec/fixtures/forty-two-candidate.json" }
 
-    let(:expected) {
+    let(:expected_table) {
       <<~EOF.strip
         TYPE          | PATH      | REFERENCE  | CANDIDATE
         --------------|-----------|------------|-------------------------------
@@ -27,33 +19,54 @@ RSpec.describe "bin/check_please executable" do
         mismatch      | /meta/foo | spam       | foo
       EOF
     }
+    let(:expected_json) {
+      <<~EOF.strip
+        [
+          { "type": "type_mismatch", "path": "/name", "reference": "The Answer", "candidate": [ "I am large, and contain multitudes." ] },
+          { "type": "mismatch", "path": "/words/3", "reference": "you", "candidate": "we" },
+          { "type": "mismatch", "path": "/words/6", "reference": "you", "candidate": "I" },
+          { "type": "extra", "path": "/words/11", "reference": null, "candidate": "dude" },
+          { "type": "missing", "path": "/meta/bar", "reference": "eggs", "candidate": null },
+          { "type": "mismatch", "path": "/meta/foo", "reference": "spam", "candidate": "foo" }
+        ]
+      EOF
+    }
 
-    specify "running the executable with both filenames produces tabular output" do
-      actual = `bin/check_please #{ref_file} #{can_file}`
-      actual = strip_trailing_whitespace(actual)
-      expect( actual ).to eq( expected )
-    end
-
-    specify "if the second filename is omitted, executable looks for its content on stdin" do
-      candidate_json = File.read(can_file)
-
-      actual = nil # scope hack
-      Open3.popen3( "bin/check_please #{ref_file}") do |stdin, stdout, stderr, wait_thr|
-        stdin.puts candidate_json
-        stdin.close
-        wait_thr.value # wait for process to finish
-        actual = stdout.read
+    describe "running the executable with two filenames" do
+      it "produces tabular output" do
+        output = run_cli(ref_file, can_file)
+        expect( output ).to eq( expected_table )
       end
 
-      actual = strip_trailing_whitespace(actual)
+      specify "adding `-f json` produces JSON output" do
+        output = run_cli(ref_file, can_file, "-f", "json")
+        expect( output ).to eq( expected_json )
+      end
 
-      expect( actual ).to eq( expected )
+      specify "adding an unrecognized flag complains about the flag, prints help, and exits" do
+        output = run_cli(ref_file, can_file, "--welcome-to-zombocom")
+        expect( output ).to include( "--welcome-to-zombocom" )
+        expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+      end
     end
 
-    specify "if the second filename is omitted AND the user didn't pipe anything in, executable prints --help and exits" do
-      actual = `bin/check_please #{ref_file}`
-      actual = strip_trailing_whitespace(actual)
-      expect( actual ).to match( /^Usage:/ )
+    describe "running the executable with one filename" do
+      it "reads the candidate from piped stdin" do
+        output = run_cli(ref_file, pipe: can_file)
+        expect( output ).to eq( expected_table )
+      end
+
+      specify "prints help and exits if the user didn't pipe anything in" do
+        output = run_cli(ref_file)
+        expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+      end
+    end
+
+    describe "running the executable with no arguments" do
+      specify "prints help and exits" do
+        output = run_cli("")
+        expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+      end
     end
   end
 
