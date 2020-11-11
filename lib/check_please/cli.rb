@@ -12,15 +12,13 @@ module CheckPlease
 
     FLAGS = []
 
-    def self.flag(&block)
-      flag = Flag.new(&block)
+    def self.flag(*args, &block)
+      flag = Flag.new(*args, &block)
       FLAGS << flag
     end
 
-    flag do |f|
-      f.short = "-f FORMAT"
-      f.long  = "--format FORMAT"
-      f.desc  = "format in which to present diffs (available options: [#{CheckPlease::Printers::FORMATS.join(", ")}])"
+    flag "-f FORMAT", "--format FORMAT" do |f|
+      f.desc = "format in which to present diffs (available options: [#{CheckPlease::Printers::FORMATS.join(", ")}])"
       f.set_key :format, :to_sym
     end
   end

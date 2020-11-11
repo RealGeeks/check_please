@@ -5,8 +5,12 @@ module CLI
     ATTR_NAMES = %i[ short long desc key block ]
     attr_accessor(*ATTR_NAMES)
 
-    def initialize
+    def initialize(*args)
+      self.short = args.shift if args.any?
+      self.long  = args.shift if args.any?
+
       yield self if block_given?
+
       missing = ATTR_NAMES.select { |e| self.send(e).nil? }
       if missing.any?
         raise ArgumentError, "Missing attributes: #{missing.join(', ')}"
