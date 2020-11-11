@@ -62,10 +62,19 @@ RSpec.describe "bin/check_please executable" do
       end
     end
 
+    describe "running the executable with only flags" do
+      specify "complains about missing reference, prints help and exits" do
+        output = run_cli("-f json")
+        expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+        expect( output ).to include( "Missing <reference>" )
+      end
+    end
+
     describe "running the executable with no arguments" do
       specify "prints help and exits" do
         output = run_cli("")
         expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+        expect( output ).to_not include( "Missing <reference>" )
       end
     end
   end

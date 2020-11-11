@@ -11,6 +11,8 @@ module CLI
     # enables some shenanigans...
     def run(*args)
       args.flatten!
+      print_help_and_exit if args.empty?
+
       begin
         options = @parser.consume_flags!(args)
       rescue Parser::UnrecognizedOption => e
