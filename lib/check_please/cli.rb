@@ -7,7 +7,7 @@ module CheckPlease
 
   module CLI
     def self.run(exe_file_name)
-      Runner.new(__FILE__).run
+      Runner.new(__FILE__).run(*ARGV.dup)
     end
 
     FLAGS = []

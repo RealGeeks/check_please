@@ -9,9 +9,9 @@ module CLI
     # NOTE: unusually for me, I'm using Ruby's `or` keyword in this method.
     # `or` short circuits just like `||`, but has lower precedence, which
     # enables some shenanigans...
-    def run
+    def run(*args)
+      args.flatten!
       begin
-        args = ARGV.dup
         options = @parser.consume_flags!(args)
       rescue Parser::UnrecognizedOption => e
         print_help_and_exit e.message
