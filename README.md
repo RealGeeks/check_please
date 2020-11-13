@@ -39,6 +39,13 @@ CheckPlease uses a few words in a jargony way:
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
+Note that the executable assumes you've saved your **reference** to a file.
+Once that's done, you can either save the **candidate** to a file as well if
+that fits your workflow, **or** you can pipe it to `bin/check_please` in lieu
+of giving it a second filename as the argument.  (This is especially useful if
+you're copying an XHR response out of a web browser's dev tools and have a tool
+like MacOS's `pbpaste` utility.)
+
 ### RSpec Matcher
 
 See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).

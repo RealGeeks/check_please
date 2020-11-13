@@ -10,12 +10,15 @@ module CheckPlease
       Runner.new(__FILE__).run(*ARGV.dup)
     end
 
-    FLAGS = []
 
+
+    FLAGS = []
     def self.flag(*args, &block)
       flag = Flag.new(*args, &block)
       FLAGS << flag
     end
+
+    ##### Define CLI flags here #####
 
     flag "-f FORMAT", "--format FORMAT" do |f|
       f.desc = "format in which to present diffs (available options: [#{CheckPlease::Printers::FORMATS.join(", ")}])"
