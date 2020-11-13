@@ -1,12 +1,14 @@
 require_relative "check_please/version"
+require_relative "check_please/error"
 require_relative "check_please/path"
 require_relative "check_please/comparison"
 require_relative "check_please/diff"
 require_relative "check_please/diffs"
 require_relative "check_please/printers"
+require_relative "check_please/cli"
 
 module CheckPlease
-  class Error < StandardError; end
+  ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
 
   def self.diff(reference, candidate)
     reference = maybe_parse(reference)
@@ -14,9 +16,9 @@ module CheckPlease
     Comparison.perform(reference, candidate)
   end
 
-  def self.render_diff(reference, candidate, format: nil)
+  def self.render_diff(reference, candidate, options = {})
     diffs = diff(reference, candidate)
-    Printers.render(diffs, format)
+    Printers.render(diffs, options)
   end
 
   class << self
