@@ -131,9 +131,9 @@ CheckPlease defines:
   Also, the way these get displayed is likely to change.)_
 * **mismatch** means that both the **reference** and the **candidate** had a
   value at the given path, and neither value was an Array or a Hash.
-* "**extra**" means that, inside an Array or a Hash, the **candidate**
+* **extra** means that, inside an Array or a Hash, the **candidate**
   contained values that were not found in the **reference**.
-* "**missing**" is the opposite of **extra**:  inside an Array or a Hash, the
+* **missing** is the opposite of **extra**:  inside an Array or a Hash, the
   **reference** contained values that were not found in the **candidate**.
 
 #### Paths
