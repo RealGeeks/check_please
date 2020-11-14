@@ -1,7 +1,7 @@
 require 'open3'
 require 'timeout'
 
-RSpec.describe "bin/check_please executable" do
+RSpec.describe "bin/check_please executable", :cli do
 
   context "for a ref/can pair with a few discrepancies" do
     let(:ref_file) { "spec/fixtures/forty-two-reference.json" }
