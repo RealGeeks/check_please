@@ -3,10 +3,12 @@ module CheckPlease
   module Comparison
     extend self
 
-    def perform(reference, candidate)
+    def perform(reference, candidate, options = {})
       root = CheckPlease::Path.new
-      diffs = Diffs.new
-      compare reference, candidate, root, diffs
+      diffs = Diffs.new(options: options)
+      catch(:max_diffs_reached) do
+        compare reference, candidate, root, diffs
+      end
       diffs
     end
 

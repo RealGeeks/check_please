@@ -13,16 +13,26 @@ module CheckPlease
 
 
     FLAGS = []
-    def self.flag(*args, &block)
-      flag = Flag.new(*args, &block)
+    def self.flag(long:, short: nil, &block)
+      flag = Flag.new(short, long, &block)
       FLAGS << flag
     end
 
     ##### Define CLI flags here #####
 
-    flag "-f FORMAT", "--format FORMAT" do |f|
+    flag short: "-f FORMAT", long: "--format FORMAT" do |f|
       f.desc = "format in which to present diffs (available options: [#{CheckPlease::Printers::FORMATS.join(", ")}])"
       f.set_key :format, :to_sym
+    end
+
+    flag short: "-n MAX_DIFFS", long: "--max-diffs MAX_DIFFS" do |f|
+      f.desc = "Stop after encountering a specified number of diffs"
+      f.set_key :max_diffs, :to_i
+    end
+
+    flag long: "--fail-fast" do |f|
+      f.desc = "Stop after encountering the very first diff"
+      f.set_key(:max_diffs) { 1 }
     end
   end
 

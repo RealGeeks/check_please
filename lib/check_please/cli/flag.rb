@@ -12,6 +12,7 @@ module CLI
       yield self if block_given?
 
       missing = ATTR_NAMES.select { |e| self.send(e).nil? }
+      missing -= %i[ short ] # short is optional!
       if missing.any?
         raise ArgumentError, "Missing attributes: #{missing.join(', ')}"
       end

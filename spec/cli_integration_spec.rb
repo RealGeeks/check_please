@@ -43,6 +43,11 @@ RSpec.describe "bin/check_please executable" do
         expect( output ).to eq( expected_json )
       end
 
+      specify "adding `--fail-fast` limits output to one row" do
+        output = run_cli(ref_file, can_file, "--fail-fast")
+        expect( output.lines.length ).to be < expected_table.lines.length
+      end
+
       specify "adding an unrecognized flag complains about the flag, prints help, and exits" do
         output = run_cli(ref_file, can_file, "--welcome-to-zombocom")
         expect( output ).to include( "--welcome-to-zombocom" )

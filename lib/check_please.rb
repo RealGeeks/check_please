@@ -10,14 +10,14 @@ require_relative "check_please/cli"
 module CheckPlease
   ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
 
-  def self.diff(reference, candidate)
+  def self.diff(reference, candidate, options = {})
     reference = maybe_parse(reference)
     candidate = maybe_parse(candidate)
-    Comparison.perform(reference, candidate)
+    Comparison.perform(reference, candidate, options)
   end
 
   def self.render_diff(reference, candidate, options = {})
-    diffs = diff(reference, candidate)
+    diffs = diff(reference, candidate, options)
     Printers.render(diffs, options)
   end
 

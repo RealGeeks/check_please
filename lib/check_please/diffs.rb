@@ -5,7 +5,9 @@ module CheckPlease
   # Custom collection class for Diff instances.
   # Can retrieve members using indexes or paths.
   class Diffs
-    def initialize(diff_list = nil)
+    attr_reader :options
+    def initialize(diff_list = nil, options: {})
+      @options = options
       @list = []
       @hash = {}
       Array(diff_list).each do |diff|
@@ -27,6 +29,11 @@ module CheckPlease
     end
 
     def <<(diff)
+      if (n = options[:max_diffs]) && length >= n
+        # It seems no one can help me now / I'm in too deep, there's no way out
+        throw :max_diffs_reached
+      end
+
       @list << diff
       @hash[diff.path] = diff
     end

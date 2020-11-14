@@ -163,8 +163,6 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
 ## TODO
 
 * command line flags for :allthethings:!
-  * --fail-fast
-  * limit to first N
   * sort by path?
   * max depth (for iterative refinement?)
 * detect timestamps and compare after parsing?

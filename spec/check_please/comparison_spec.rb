@@ -1,6 +1,6 @@
 RSpec.describe CheckPlease::Comparison do
-  def invoke!(ref, can)
-    CheckPlease::Comparison.perform(ref, can)
+  def invoke!(ref, can, options = {})
+    CheckPlease::Comparison.perform(ref, can, options)
   end
 
   context "when given two scalars" do
@@ -200,6 +200,15 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,          can: "dude" )
       expect( diffs["/meta/foo"] ).to eq_diff( :mismatch, "/meta/foo", ref: "spam",       can: "foo" )
       expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs",       can: nil )
+    end
+
+    it "can be told to stop after N mismatches" do
+      diffs = invoke!(reference, candidate, max_diffs: 3)
+      expect( diffs.length ).to eq( 3 )
+
+      expect( diffs["/name"]     ).to eq_diff( :mismatch, "/name",     ref: "The Answer", can: "Charlie" )
+      expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you",        can: "we" )
+      expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you",        can: "I" )
     end
   end
 end
