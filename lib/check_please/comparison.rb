@@ -15,6 +15,10 @@ module CheckPlease
     private
 
     def compare(ref, can, path, diffs)
+      if (d = diffs.options[:max_depth])
+        return if path.depth > d
+      end
+
       case types(ref, can)
       when [ :array, :array ] ; compare_arrays ref, can, path, diffs
       when [ :hash,  :hash  ] ; compare_hashes ref, can, path, diffs

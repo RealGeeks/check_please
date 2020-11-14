@@ -11,6 +11,10 @@ module CheckPlease
       self.class.new( Array(@segments) + Array(new_basename.to_s) )
     end
 
+    def depth
+      1 + @segments.length
+    end
+
     def to_s
       SEPARATOR + @segments.join(SEPARATOR)
     end

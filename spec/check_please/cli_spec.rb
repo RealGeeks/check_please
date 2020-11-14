@@ -33,6 +33,11 @@ RSpec.describe CheckPlease::CLI do
         expect( opts[:max_diffs] ).to eq( 1 )
       end
 
+      it "recognizes '--max-depth 2' as limiting recursion to 2 levels" do
+        opts = invoke!(%w[ --max-depth 2 ])
+        expect( opts[:max_depth] ).to eq( 2 )
+      end
+
       it "complains if given an arg it doesn't recognize" do
         expect { invoke!(%w[ --welcome-to-zombocom ]) }.to \
           raise_error( described_class::UnrecognizedOption )

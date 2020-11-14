@@ -29,9 +29,9 @@ module CheckPlease
     end
 
     def <<(diff)
-      if (n = options[:max_diffs]) && length >= n
+      if (n = options[:max_diffs])
         # It seems no one can help me now / I'm in too deep, there's no way out
-        throw :max_diffs_reached
+        throw :max_diffs_reached if length >= n
       end
 
       @list << diff

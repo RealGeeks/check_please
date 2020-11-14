@@ -169,6 +169,24 @@ RSpec.describe CheckPlease::Comparison do
     end
   end
 
+  context "for two data structures with one diff at the top level and one diff a few levels down" do
+    let(:reference) { { a: 1, foo: [ { bar: { yak: "bacon"  } } ] } }
+    let(:candidate) { { a: 2, foo: [ { bar: { yak: "butter" } } ] } }
+
+    it "has two diffs" do
+      diffs = invoke!(reference, candidate)
+      expect( diffs.length ).to eq( 2 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a",             ref: 1,       can: 2 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/foo/1/bar/yak", ref: "bacon", can: "butter" )
+    end
+
+    it "only has the first diff when passed a max_depth of 2" do
+      diffs = invoke!(reference, candidate, max_depth: 2)
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a", ref: 1, can: 2 )
+    end
+  end
+
   context "when given a complex data structure with more than one discrepancy" do
     let(:reference) {
       {

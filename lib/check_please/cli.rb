@@ -34,6 +34,12 @@ module CheckPlease
       f.desc = "Stop after encountering the very first diff"
       f.set_key(:max_diffs) { 1 }
     end
+
+    flag short: "-d MAX_DEPTH", long: "--max-depth MAX_DEPTH" do |f|
+      f.desc = "Limit the number of levels to descend when comparing documents (NOTE: root has depth=1)"
+      f.set_key :max_depth, :to_i
+    end
+
   end
 
 end
