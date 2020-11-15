@@ -2,22 +2,10 @@ def strip_trailing_whitespace(s)
   s.lines.map(&:rstrip).join("\n")
 end
 
-TIME_OUT_CLI_AFTER = 1 # seconds
-def run_cli(*args, pipe: nil)
-  args.flatten!
+def fixture_file_name(basename)
+  "spec/fixtures/#{basename}"
+end
 
-  cmd = []
-  if pipe
-    cmd << "cat"
-    cmd << pipe
-    cmd << "|"
-  end
-  cmd << "bin/check_please"
-  cmd.concat << args
-
-  out = nil # scope hack
-  Timeout.timeout(TIME_OUT_CLI_AFTER) do
-    out = `#{cmd.compact.join(' ')}`
-  end
-  strip_trailing_whitespace(out)
+def fixture_file_contents(basename)
+  File.read(fixture_file_name(basename))
 end

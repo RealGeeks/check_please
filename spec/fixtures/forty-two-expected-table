@@ -1,0 +1,8 @@
+TYPE          | PATH      | REFERENCE  | CANDIDATE
+--------------|-----------|------------|-------------------------------
+type_mismatch | /name     | The Answer | ["I am large, and contain m...
+mismatch      | /words/3  | you        | we
+mismatch      | /words/6  | you        | I
+extra         | /words/11 |            | dude
+missing       | /meta/bar | eggs       |
+mismatch      | /meta/foo | spam       | foo
