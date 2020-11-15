@@ -169,21 +169,47 @@ RSpec.describe CheckPlease::Comparison do
     end
   end
 
-  context "for two data structures with one diff at the top level and one diff a few levels down" do
-    let(:reference) { { a: 1, foo: [ { bar: { yak: "bacon"  } } ] } }
-    let(:candidate) { { a: 2, foo: [ { bar: { yak: "butter" } } ] } }
+  context "for two data structures four levels deep, with one diff at each level" do
+    let(:reference) { { a: 1, b: { c: 3, d: { e: 5, f: { g: 7 } } } } }
+    let(:candidate) { { a: 2, b: { c: 4, d: { e: 6, f: { g: 8 } } } } }
 
-    it "has two diffs" do
+    it "has four diffs" do
       diffs = invoke!(reference, candidate)
-      expect( diffs.length ).to eq( 2 )
-      expect( diffs[0] ).to eq_diff( :mismatch, "/a",             ref: 1,       can: 2 )
-      expect( diffs[1] ).to eq_diff( :mismatch, "/foo/1/bar/yak", ref: "bacon", can: "butter" )
+      expect( diffs.length ).to eq( 4 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a",       ref: 1, can: 2 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",     ref: 3, can: 4 )
+      expect( diffs[2] ).to eq_diff( :mismatch, "/b/d/e",   ref: 5, can: 6 )
+      expect( diffs[3] ).to eq_diff( :mismatch, "/b/d/f/g", ref: 7, can: 8 )
     end
 
-    it "only has the first diff when passed a max_depth of 2" do
-      diffs = invoke!(reference, candidate, max_depth: 2)
+    it "only has the first diff when passed a max_depth of 1" do
+      diffs = invoke!(reference, candidate, max_depth: 1)
       expect( diffs.length ).to eq( 1 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a", ref: 1, can: 2 )
+    end
+
+    it "only has the first two diffs when passed a max_depth of 2" do
+      diffs = invoke!(reference, candidate, max_depth: 2)
+      expect( diffs.length ).to eq( 2 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a",   ref: 1, can: 2 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/b/c", ref: 3, can: 4 )
+    end
+
+    it "only has the first three diffs when passed a max_depth of 3" do
+      diffs = invoke!(reference, candidate, max_depth: 3)
+      expect( diffs.length ).to eq( 3 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a",     ref: 1, can: 2 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",   ref: 3, can: 4 )
+      expect( diffs[2] ).to eq_diff( :mismatch, "/b/d/e", ref: 5, can: 6 )
+    end
+
+    it "has all four diffs when passed a max_depth of 4" do
+      diffs = invoke!(reference, candidate, max_depth: 4)
+      expect( diffs.length ).to eq( 4 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/a",       ref: 1, can: 2 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",     ref: 3, can: 4 )
+      expect( diffs[2] ).to eq_diff( :mismatch, "/b/d/e",   ref: 5, can: 6 )
+      expect( diffs[3] ).to eq_diff( :mismatch, "/b/d/f/g", ref: 7, can: 8 )
     end
   end
 

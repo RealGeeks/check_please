@@ -16,7 +16,7 @@ module CheckPlease
 
     def compare(ref, can, path, diffs)
       if (d = diffs.options[:max_depth])
-        return if path.depth > d
+        return if path.depth > d + 1
       end
 
       case types(ref, can)
