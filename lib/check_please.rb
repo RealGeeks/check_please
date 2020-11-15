@@ -7,6 +7,8 @@ require_relative "check_please/diffs"
 require_relative "check_please/printers"
 require_relative "check_please/cli"
 
+require 'yaml'
+
 module CheckPlease
   ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
 
@@ -25,16 +27,17 @@ module CheckPlease
     private
 
     # Maybe you gave us JSON strings, maybe you gave us Ruby objects.
-    # We just don't know!  That's what makes it so exciting!
-    def maybe_parse(maybe_json)
+    # Heck, maybe you even gave us some YAML!  We just don't know!
+    # That's what makes it so exciting!
+    def maybe_parse(document)
 
-      case maybe_json
-      when String ; JSON.parse(maybe_json) # don't worry, if this raises we'll assume you've already parsed it
-      else        ; maybe_json
+      case document
+      when String ; return YAML.load(document) # don't worry, if this raises we'll assume you've already parsed it
+      else        ; return document
       end
 
-    rescue JSON::ParserError
-      return maybe_json
+    rescue JSON::ParserError, Psych::SyntaxError
+      return document
     end
   end
 end

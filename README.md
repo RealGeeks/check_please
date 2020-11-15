@@ -1,6 +1,7 @@
 # check_please
 
-Check for differences between two JSON strings (or Ruby data structures parsed from them).
+Check for differences between two JSON documents, YAML documents, or Ruby data
+structures parsed from either of those.
 
 ## Installation
 

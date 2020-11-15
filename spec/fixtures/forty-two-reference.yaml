@@ -1,0 +1,17 @@
+id: 42
+name: The Answer
+words:
+  - what
+  - do
+  - you
+  - get
+  - when
+  - you
+  - multiply
+  - six
+  - by
+  - nine
+meta:
+  foo: spam
+  bar: eggs
+  yak: bacon

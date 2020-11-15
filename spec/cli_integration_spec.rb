@@ -32,6 +32,26 @@ RSpec.describe "bin/check_please executable", :cli do
       EOF
     }
 
+    ###############################################
+    ##                                           ##
+    ##  ########   #####    ######      #####    ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##      #####    ######      #####    ##
+    ##                                           ##
+    ###############################################
+    # TODO: this should only be about CLI filename and argument parsing.
+    # - It only needs *one* integration spec to prove that flags are passed along
+    # - It might not even need an integration spec with YAML files, since YAML parsing can be a fast(er) test.
+    # - In fact...
+    #   - ...I probably only need to Kernel#` out to the CLI to test the
+    #   various invocation scenarios.  It might be better to test the output
+    #   formats and such in faster specs too...
+    ###############################################
+
     describe "running the executable with two filenames" do
       it "produces tabular output" do
         output = run_cli(ref_file, can_file)
@@ -52,6 +72,16 @@ RSpec.describe "bin/check_please executable", :cli do
         output = run_cli(ref_file, can_file, "--welcome-to-zombocom")
         expect( output ).to include( "--welcome-to-zombocom" )
         expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+      end
+
+      context "when the ref/can pair are YAML files instead of JSON files" do
+        let(:ref_file) { "spec/fixtures/forty-two-reference.yaml" }
+        let(:can_file) { "spec/fixtures/forty-two-candidate.yaml" }
+
+        it "works" do
+          output = run_cli(ref_file, can_file)
+          expect( output ).to eq( expected_table )
+        end
       end
     end
 
