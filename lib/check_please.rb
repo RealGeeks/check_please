@@ -8,6 +8,7 @@ require_relative "check_please/printers"
 require_relative "check_please/cli"
 
 require 'yaml'
+require 'json'
 
 module CheckPlease
   ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
