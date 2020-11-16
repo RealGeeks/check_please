@@ -14,11 +14,12 @@ module Printers
     def to_s
       return "" if diffs.empty?
 
-      build_string do |io|
+      out = build_string do |io|
         switch_tableprint_io(io) do
           tp diffs.data, *TP_OPTS
         end
       end
+      strip_trailing_whitespace(out)
     end
 
     private
@@ -30,6 +31,10 @@ module Printers
       yield
     ensure
       config.io = @old_io
+    end
+
+    def strip_trailing_whitespace(s)
+      s.lines.map(&:rstrip).join("\n")
     end
   end
 
