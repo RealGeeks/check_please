@@ -58,8 +58,7 @@ back a third string containing a nicely formatted report of all the differences
 CheckPlease found in the two JSON strings.  (See also:  [./usage_examples.rb](usage_examples.rb).)
 
 (You can also parse the JSON strings yourself and pass the resulting data
-structures in, if you're into that.  I mean, I wrote this to help compare JSON
-data that's too big and complicated to scan through visually, but you do you!
+structures in, if you're into that.)
 
 ### Understanding the Output
 
@@ -71,9 +70,7 @@ tool because you want a human-friendly summary of all the places that your
 **candidate** fell short.
 
 When CheckPlease compares your two samples, it generates a list of diffs to
-describe any discrepancies it encounters.  (By default, it prints that list in a
-tabular format, but if you want to incorporate this into another toolchain,
-CheckPlease can also print these diffs as JSON to facilitate parsing.)
+describe any discrepancies it encounters.
 
 An example would probably help here.
 
@@ -125,15 +122,14 @@ CheckPlease defines:
 * **type_mismatch** means that both the **reference** and the **candidate** had
   a value at the given path, but one value was an Array or a Hash and the other
   was not.  **When CheckPlease encounters a type mismatch, it does not compare
-  anything "below" the given path.** producing a lot of "garbage" diffs.
-  _(Technical note:  CheckPlease uses a "recursive descent" strategy to
-  traverse the **reference** data structure, and it stops when it encounters a
-  type mismatch in order to avoid producing a lot of "garbage" diff output.
-  Also, the way these get displayed is likely to change.)_
+  anything "below" the given path.**  _(Technical note:  CheckPlease uses a
+  "recursive descent" strategy to traverse the **reference** data structure,
+  and it stops when it encounters a type mismatch in order to avoid producing a
+  lot of "garbage" diff output.)_
 * **mismatch** means that both the **reference** and the **candidate** had a
   value at the given path, and neither value was an Array or a Hash.
-* **extra** means that, inside an Array or a Hash, the **candidate**
-  contained values that were not found in the **reference**.
+* **extra** means that, inside an Array or a Hash, the **candidate** contained
+  values that were not found in the **reference**.
 * **missing** is the opposite of **extra**:  inside an Array or a Hash, the
   **reference** contained values that were not found in the **candidate**.
 
@@ -165,7 +161,6 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
 
 * command line flags for :allthethings:!
   * sort by path?
-  * max depth (for iterative refinement?)
 * detect timestamps and compare after parsing?
   * ignore sub-second precision (option / CLI flag)?
   * possibly support plugins for other folks to add custom coercions?
