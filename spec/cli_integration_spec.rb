@@ -66,7 +66,7 @@ RSpec.describe "bin/check_please executable", :cli do
       cmd << pipe
       cmd << "|"
     end
-    cmd << "bin/check_please"
+    cmd << "exe/check_please"
     cmd.concat << args
 
     out = nil # scope hack
