@@ -19,11 +19,10 @@ Or install it yourself as:
 
     $ gem install check_please
 
-## Usage
+## Terminology
 
-### Terminology
-
-CheckPlease uses a few words in a jargony way:
+I know, you just want to see how to use this thing.  Feel free to scroll down,
+but be aware that CheckPlease uses a few words in a jargony way:
 
 * **Reference** is always used to refer to the "target" or "source of truth."
   We assume you're comparing two things because you want one of them to be like
@@ -36,7 +35,9 @@ CheckPlease uses a few words in a jargony way:
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
 
-### CLI
+## Usage
+
+### From the Terminal
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
@@ -47,18 +48,16 @@ of giving it a second filename as the argument.  (This is especially useful if
 you're copying an XHR response out of a web browser's dev tools and have a tool
 like MacOS's `pbpaste` utility.)
 
-### RSpec Matcher
+### From RSpec
 
 See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).
 
-### From Within Ruby
+### From Ruby
 
-Create two JSON strings and pass them to `CheckPlease.render_diff`.  You'll get
-back a third string containing a nicely formatted report of all the differences
-CheckPlease found in the two JSON strings.  (See also:  [./usage_examples.rb](usage_examples.rb).)
-
-(You can also parse the JSON strings yourself and pass the resulting data
-structures in, if you're into that.)
+Create two strings, each containing a JSON or YAML document, and pass them to
+`CheckPlease.render_diff`.  You'll get back a third string containing a report
+of all the differences CheckPlease found in the two JSON strings.  (See also:
+[./usage_examples.rb](usage_examples.rb).)
 
 ### Understanding the Output
 
@@ -135,9 +134,9 @@ CheckPlease defines:
 
 #### Paths
 
-The second column contains a path expression.  This is extremely basic:
+The second column contains a path expression.  This is extremely lo-fi:
 
-* The first element in the data structure is defined as "/".
+* The root of the data structure is defined as "/".
 * If an element in the data structure is an array, its child elements will have
   a **one-based** index appended to their parent's path.
 * If an element in the data structure is an object ("Hash" in Ruby), the key
