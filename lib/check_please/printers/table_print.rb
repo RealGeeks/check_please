@@ -4,11 +4,19 @@ module CheckPlease
 module Printers
 
   class TablePrint < Base
+    InspectStrings = Object.new.tap do |obj|
+      def obj.format(value)
+        value.is_a?(String) ? value.inspect : value
+      end
+    end
+
+    PATH_MAX_WIDTH = 250 # if you hit this limit, you have other problems
+
     TP_OPTS = [
-      :type,
-      { :path => { width: 250 } }, # if you hit this limit, you have other problems
-      :reference,
-      :candidate,
+      { type:      { display_name: "Type" } },
+      { path:      { display_name: "Path",      width: PATH_MAX_WIDTH } },
+      { reference: { display_name: "Reference", formatters: [ InspectStrings ] } },
+      { candidate: { display_name: "Candidate", formatters: [ InspectStrings ] } },
     ]
 
     def to_s

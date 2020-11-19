@@ -8,8 +8,8 @@ RSpec.describe CheckPlease::Printers::TablePrint do
       <<~EOF.strip
         TYPE    | PATH | REFERENCE | CANDIDATE
         --------|------|-----------|----------
-        missing | /foo | wibble    |
-        extra   | /bar |           | wibble
+        missing | /foo | "wibble"  |
+        extra   | /bar |           | "wibble"
       EOF
     }
 
@@ -31,8 +31,8 @@ RSpec.describe CheckPlease::Printers::TablePrint do
       <<~EOF.strip
         TYPE    | PATH                                                              | REFERENCE                      | CANDIDATE
         --------|-------------------------------------------------------------------|--------------------------------|-------------------------------
-        missing | /the_sun_is_a_mass_of_incandescent_gas_a_gigantic_nuclear_furnace | where hydrogen is built int... |
-        extra   | /the_sun_is_a_miasma_of_incandescent_plasma                       |                                | the sun's not simply made o...
+        missing | /the_sun_is_a_mass_of_incandescent_gas_a_gigantic_nuclear_furnace | "where hydrogen is built in... |
+        extra   | /the_sun_is_a_miasma_of_incandescent_plasma                       |                                | "the sun's not simply made ...
       EOF
     }
 
