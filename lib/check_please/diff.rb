@@ -11,14 +11,6 @@ module CheckPlease
       @path      = path.to_s
     end
 
-    def ref_display
-      reference.inspect
-    end
-
-    def can_display
-      candidate.inspect
-    end
-
     def attributes
       Hash[ COLUMNS.map { |name| [ name, send(name) ] } ]
     end
@@ -28,8 +20,8 @@ module CheckPlease
       s << self.class.name
       s << " type=#{type}"
       s << " path=#{path}"
-      s << " ref=#{ref_display}"
-      s << " can=#{can_display}"
+      s << " ref=#{reference.inspect}"
+      s << " can=#{candidate.inspect}"
       s << ">"
       s
     end
