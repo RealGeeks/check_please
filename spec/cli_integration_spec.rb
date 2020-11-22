@@ -51,6 +51,8 @@ RSpec.describe "bin/check_please executable", :cli do
       specify "prints help and exits" do
         output = run_cli("")
         expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
+        expect( output ).to include( "--format FORMAT" )
+
         expect( output ).to_not include( "Missing <reference>" )
       end
     end
