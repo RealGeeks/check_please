@@ -1,11 +1,10 @@
-require_relative 'cli/flag'
-# require_relative 'cli/flags'
-require_relative 'cli/parser'
-require_relative 'cli/runner'
-
 module CheckPlease
 
   module CLI
+    autoload :Flag,   "check_please/cli/flag"
+    autoload :Runner, "check_please/cli/parser"
+    autoload :Parser, "check_please/cli/runner"
+
     def self.run(exe_file_name)
       Runner.new(__FILE__).run(*ARGV.dup)
     end
