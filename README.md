@@ -52,6 +52,11 @@ like MacOS's `pbpaste` utility.)
 
 See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).
 
+If you'd like more control over the output formatting, and especially if you'd
+like to provide custom logic for diffing your own classes, you might be better
+served by the [super_diff](https://github.com/mcmire/super_diff) gem.  Check it
+out!
+
 ### From Ruby
 
 Create two strings, each containing a JSON or YAML document, and pass them to
