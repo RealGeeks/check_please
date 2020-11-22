@@ -1,14 +1,18 @@
-require_relative "check_please/version"
-require_relative "check_please/error"
-require_relative "check_please/path"
-require_relative "check_please/comparison"
-require_relative "check_please/diff"
-require_relative "check_please/diffs"
-require_relative "check_please/printers"
-require_relative "check_please/cli"
-
 require 'yaml'
 require 'json'
+
+module CheckPlease
+  autoload :CLI,        "check_please/cli"
+  autoload :Comparison, "check_please/comparison"
+  autoload :Diff,       "check_please/diff"
+  autoload :Diffs,      "check_please/diffs"
+  autoload :Error,      "check_please/error"
+  autoload :Path,       "check_please/path"
+  autoload :Printers,   "check_please/printers"
+  autoload :Version,    "check_please/version"
+end
+
+
 
 module CheckPlease
   ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
