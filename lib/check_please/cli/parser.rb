@@ -4,35 +4,40 @@ module CheckPlease
 module CLI
 
   class Parser
-    class UnrecognizedOption < StandardError
-      include CheckPlease::Error
-    end
-
     def initialize(exe_file_name)
       @exe_file_name = exe_file_name
-      @optparse = OptionParser.new
-      @optparse.banner = banner
-
-      @options = {} # yuck
-      CheckPlease::CLI::FLAGS.each do |flag|
-        flag.visit_option_parser(@optparse, @options)
-      end
     end
 
-    # Unfortunately, OptionParser *really* wants to use closures.
-    # I haven't yet figured out how to get around this...
-    def consume_flags!(args)
-      @optparse.parse!(args) # removes recognized flags from `args`
-      return @options
+    # Unfortunately, OptionParser *really* wants to use closures.  I haven't
+    # yet figured out how to get around this, but at least it's closing on a
+    # local instead of an ivar... progress?
+    def flags_from_args!(args)
+      flags = Flags.new
+      optparse = option_parser(flags: flags)
+      optparse.parse!(args) # removes recognized flags from `args`
+      return flags
     rescue OptionParser::InvalidOption, OptionParser::AmbiguousOption => e
-      raise UnrecognizedOption, e.message, cause: e
+      raise InvalidFlag, e.message, cause: e
     end
 
     def help
-      @optparse.help
+      option_parser.help
     end
 
     private
+
+    # NOTE: if flags is nil, you'll get something that can print help, but will explode when sent :parse
+    def option_parser(flags: nil)
+      OptionParser.new.tap do |optparse|
+        optparse.banner = banner
+        CheckPlease::Flags.each_flag do |flag|
+          args = [ flag.short_cli_flag, flag.long_cli_flag, flag.description ].flatten.compact
+          optparse.on(*args) do |value|
+            flags.send "#{flag.name}=", value
+          end
+        end
+      end
+    end
 
     def banner
       <<~EOF

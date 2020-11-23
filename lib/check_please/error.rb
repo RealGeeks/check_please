@@ -6,4 +6,8 @@ module CheckPlease
     # instead....
   end
 
+  class InvalidFlag < ArgumentError
+    include CheckPlease::Error
+  end
+
 end

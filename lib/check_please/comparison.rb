@@ -3,9 +3,9 @@ module CheckPlease
   module Comparison
     extend self
 
-    def perform(reference, candidate, options = {})
+    def perform(reference, candidate, flags = {})
       root = CheckPlease::Path.new
-      diffs = Diffs.new(options: options)
+      diffs = Diffs.new(flags: flags)
       catch(:max_diffs_reached) do
         compare reference, candidate, root, diffs
       end
@@ -15,7 +15,7 @@ module CheckPlease
     private
 
     def compare(ref, can, path, diffs)
-      if (d = diffs.options[:max_depth])
+      if (d = diffs.flags.max_depth)
         return if path.depth > d + 1
       end
 

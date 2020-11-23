@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "check_please"
+require "amazing_print"
 
 
 

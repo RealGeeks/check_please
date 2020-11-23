@@ -1,6 +1,6 @@
 RSpec.describe CheckPlease::Comparison do
-  def invoke!(ref, can, options = {})
-    CheckPlease::Comparison.perform(ref, can, options)
+  def invoke!(ref, can, flags = {})
+    CheckPlease::Comparison.perform(ref, can, flags)
   end
 
   context "when given two scalars" do

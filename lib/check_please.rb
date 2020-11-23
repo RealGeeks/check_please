@@ -1,15 +1,20 @@
 require 'yaml'
 require 'json'
 
+
+# easier to just require these
+require "check_please/error"
+require "check_please/version"
+
 module CheckPlease
   autoload :CLI,        "check_please/cli"
   autoload :Comparison, "check_please/comparison"
   autoload :Diff,       "check_please/diff"
   autoload :Diffs,      "check_please/diffs"
-  autoload :Error,      "check_please/error"
+  autoload :Flag,       "check_please/flag"
+  autoload :Flags,      "check_please/flags"
   autoload :Path,       "check_please/path"
   autoload :Printers,   "check_please/printers"
-  autoload :Version,    "check_please/version"
 end
 
 
@@ -17,15 +22,15 @@ end
 module CheckPlease
   ELEVATOR_PITCH = "Tool for parsing and diffing two JSON documents."
 
-  def self.diff(reference, candidate, options = {})
+  def self.diff(reference, candidate, flags = {})
     reference = maybe_parse(reference)
     candidate = maybe_parse(candidate)
-    Comparison.perform(reference, candidate, options)
+    Comparison.perform(reference, candidate, flags)
   end
 
-  def self.render_diff(reference, candidate, options = {})
-    diffs = diff(reference, candidate, options)
-    Printers.render(diffs, options)
+  def self.render_diff(reference, candidate, flags = {})
+    diffs = diff(reference, candidate, flags)
+    Printers.render(diffs, flags)
   end
 
   class << self
@@ -45,4 +50,54 @@ module CheckPlease
       return document
     end
   end
+
+
+
+  Flags.define :format do |flag|
+    legal_values = CheckPlease::Printers::FORMATS.sort
+
+    flag.coerce &:to_sym
+    flag.default = CheckPlease::Printers::DEFAULT_FORMAT
+    flag.validate { |value| legal_values.include?(value) }
+
+    flag.long_cli_flag = "--format FORMAT"
+    flag.short_cli_flag = "-f FORMAT"
+    flag.description = [
+      "format in which to present diffs",
+      "  (available formats: [#{legal_values.join(", ")}])",
+    ]
+  end
+
+  Flags.define :max_diffs do |flag|
+    flag.coerce &:to_i
+    flag.validate { |value| value.to_i > 0 }
+
+    flag.long_cli_flag = "--max-diffs MAX_DIFFS"
+    flag.short_cli_flag = "-n MAX_DIFFS"
+    flag.description = "Stop after encountering a specified number of diffs"
+  end
+
+  Flags.define :fail_fast do |flag|
+    flag.default = false
+    flag.coerce { |value| !!value }
+
+    flag.long_cli_flag = "--fail-fast"
+    flag.description = [
+      "Stop after encountering the very first diff",
+      "  (equivalent to '--max-diffs 1')",
+    ]
+  end
+
+  Flags.define :max_depth do |flag|
+    flag.coerce &:to_i
+    flag.validate { |value| value.to_i > 0 }
+
+    flag.long_cli_flag = "--max_depth MAX_DEPTH"
+    flag.short_cli_flag = "-d MAX_DEPTH"
+    flag.description = [
+      "Limit the number of levels to descend when comparing documents",
+      "  (NOTE: root has depth = 1)",
+    ]
+  end
+
 end

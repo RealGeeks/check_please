@@ -14,8 +14,8 @@ module CLI
       print_help_and_exit if args.empty?
 
       begin
-        options = @parser.consume_flags!(args)
-      rescue Parser::UnrecognizedOption => e
+        flags = @parser.flags_from_args!(args)
+      rescue InvalidFlag => e
         print_help_and_exit e.message
       end
 
@@ -31,7 +31,7 @@ module CLI
         or print_help_and_exit "Missing <candidate> argument, AND nothing was piped in"
 
       # Looks like we're good to go!
-      diff_view = CheckPlease.render_diff(reference, candidate, options)
+      diff_view = CheckPlease.render_diff(reference, candidate, flags)
       puts diff_view
     end
 

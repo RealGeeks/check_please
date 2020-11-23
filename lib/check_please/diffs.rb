@@ -5,9 +5,9 @@ module CheckPlease
   # Custom collection class for Diff instances.
   # Can retrieve members using indexes or paths.
   class Diffs
-    attr_reader :options
-    def initialize(diff_list = nil, options: {})
-      @options = options
+    attr_reader :flags
+    def initialize(diff_list = nil, flags: {})
+      @flags = Flags.new(flags)
       @list = []
       @hash = {}
       Array(diff_list).each do |diff|
@@ -29,7 +29,11 @@ module CheckPlease
     end
 
     def <<(diff)
-      if (n = options[:max_diffs])
+      if flags.fail_fast && length > 0
+        throw :max_diffs_reached
+      end
+
+      if (n = flags.max_diffs)
         # It seems no one can help me now / I'm in too deep, there's no way out
         throw :max_diffs_reached if length >= n
       end
