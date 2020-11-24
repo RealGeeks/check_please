@@ -44,7 +44,7 @@ module CheckPlease
     end
 
     def record(ref, can, path, type)
-      self << Diff.new(type, ref, can, path)
+      self << Diff.new(type, path, ref, can)
     end
 
     def data

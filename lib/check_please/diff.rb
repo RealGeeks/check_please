@@ -3,12 +3,12 @@ module CheckPlease
   class Diff
     COLUMNS = %i[ type path reference candidate ]
 
-    attr_reader :type, :reference, :candidate, :path
-    def initialize(type, reference, candidate, path)
+    attr_reader(*COLUMNS)
+    def initialize(type, path, reference, candidate)
       @type      = type
+      @path      = path.to_s
       @reference = reference
       @candidate = candidate
-      @path      = path.to_s
     end
 
     def attributes
