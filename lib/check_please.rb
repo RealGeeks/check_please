@@ -60,8 +60,8 @@ module CheckPlease
     flag.default = CheckPlease::Printers::DEFAULT_FORMAT
     flag.validate { |value| legal_values.include?(value) }
 
-    flag.long_cli_flag = "--format FORMAT"
-    flag.short_cli_flag = "-f FORMAT"
+    flag.cli_long = "--format FORMAT"
+    flag.cli_short = "-f FORMAT"
     flag.description = [
       "format in which to present diffs",
       "  (available formats: [#{legal_values.join(", ")}])",
@@ -72,8 +72,8 @@ module CheckPlease
     flag.coerce &:to_i
     flag.validate { |value| value.to_i > 0 }
 
-    flag.long_cli_flag = "--max-diffs MAX_DIFFS"
-    flag.short_cli_flag = "-n MAX_DIFFS"
+    flag.cli_long = "--max-diffs MAX_DIFFS"
+    flag.cli_short = "-n MAX_DIFFS"
     flag.description = "Stop after encountering a specified number of diffs"
   end
 
@@ -81,7 +81,7 @@ module CheckPlease
     flag.default = false
     flag.coerce { |value| !!value }
 
-    flag.long_cli_flag = "--fail-fast"
+    flag.cli_long = "--fail-fast"
     flag.description = [
       "Stop after encountering the very first diff",
       "  (equivalent to '--max-diffs 1')",
@@ -92,8 +92,8 @@ module CheckPlease
     flag.coerce &:to_i
     flag.validate { |value| value.to_i > 0 }
 
-    flag.long_cli_flag = "--max_depth MAX_DEPTH"
-    flag.short_cli_flag = "-d MAX_DEPTH"
+    flag.cli_long = "--max_depth MAX_DEPTH"
+    flag.cli_short = "-d MAX_DEPTH"
     flag.description = [
       "Limit the number of levels to descend when comparing documents",
       "  (NOTE: root has depth = 1)",

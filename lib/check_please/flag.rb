@@ -4,8 +4,8 @@ module CheckPlease
     attr_accessor :name
     attr_accessor :default
     attr_accessor :description
-    attr_accessor :long_cli_flag
-    attr_accessor :short_cli_flag
+    attr_accessor :cli_long
+    attr_accessor :cli_short
 
     def initialize(attrs = {})
       attrs.each do |name, value|

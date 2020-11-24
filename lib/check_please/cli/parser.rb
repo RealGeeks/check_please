@@ -31,7 +31,7 @@ module CLI
       OptionParser.new.tap do |optparse|
         optparse.banner = banner
         CheckPlease::Flags.each_flag do |flag|
-          args = [ flag.short_cli_flag, flag.long_cli_flag, flag.description ].flatten.compact
+          args = [ flag.cli_short, flag.cli_long, flag.description ].flatten.compact
           optparse.on(*args) do |value|
             flags.send "#{flag.name}=", value
           end
