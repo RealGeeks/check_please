@@ -50,7 +50,8 @@ module CheckPlease
           case
           when ref_array.length < n ; diffs.record ref, can, new_path, :extra
           when can_array.length < n ; diffs.record ref, can, new_path, :missing
-          else                      ; compare ref, can, new_path, diffs
+          else
+            compare ref, can, new_path, diffs
           end
         end
       end
