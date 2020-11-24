@@ -1,13 +1,14 @@
 require 'forwardable'
 
 module CheckPlease
+  using Refinements
 
   # Custom collection class for Diff instances.
   # Can retrieve members using indexes or paths.
   class Diffs
     attr_reader :flags
     def initialize(diff_list = nil, flags: {})
-      @flags = Flags.new(flags)
+      @flags = Flags(flags)
       @list = []
       @hash = {}
       Array(diff_list).each do |diff|

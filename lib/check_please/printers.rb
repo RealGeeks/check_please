@@ -1,4 +1,5 @@
 module CheckPlease
+  using Refinements
 
   module Printers
     autoload :Base,       "check_please/printers/base"
@@ -13,7 +14,7 @@ module CheckPlease
     DEFAULT_FORMAT = :table
 
     def self.render(diffs, flags = {})
-      flags = CheckPlease::Flags.new(flags)
+      flags = Flags(flags)
       printer = PRINTERS_BY_FORMAT[flags.format]
       printer.render(diffs)
     end

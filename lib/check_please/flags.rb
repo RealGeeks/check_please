@@ -5,11 +5,6 @@ module CheckPlease
   class Flags
     BY_NAME = {} ; private_constant :BY_NAME
 
-    def self.new(*args, **kwargs, &block)
-      return args.first if args.length == 1 && kwargs.empty? && args.first.is_a?(self)
-      super
-    end
-
     def self.define(name, &block)
       flag = Flag.new(name: name, &block)
       BY_NAME[flag.name] = flag
