@@ -24,13 +24,13 @@ module CheckPlease
       end
     end
 
+    def coerce(&block)
+      @coercer = block
+    end
+
     def reentrant
       @reentrant = true
       self.default_proc = ->{ Array.new }
-    end
-
-    def coerce(&block)
-      @coercer = block
     end
 
     def validate(&block)
