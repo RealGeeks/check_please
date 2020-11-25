@@ -161,22 +161,22 @@ If you want to incorporate CheckPlease into some other toolchain, it can also
 print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
 `CheckPlease.render_diff`; in the CLI, use the `-f`/`--format` switch.
 
-## TODO
+## TODO (maybe)
 
 * command line flags for :allthethings:!
   * sort by path?
 * detect timestamps and compare after parsing?
   * ignore sub-second precision (option / CLI flag)?
   * possibly support plugins for other folks to add custom coercions?
-* support expressions of specific paths to ignore
-  * wildcards?  `#` for indexes, `**` to match one or more path segments?
-    (This could get ugly fast.)
 * display filters?  (e.g., { a: 1, b: 2 } ==> "Hash#3")
   * shorter descriptions of values with different classes
     (but maybe just the existing :type_mismatch diffs?)
   * another "possibly support plugins" expansion point here
 * more output formats, maybe?
-* look for a config file in ./.check_please_config or ~/.check_please_config,
+* [0xABAD1DEA] support wildcards in --select-paths and --reject-paths?
+  * `#` for indexes, `**` to match one or more path segments?
+    (This could get ugly fast.)
+* [0xABAD1DEA] look for a config file in ./.check_please_config or ~/.check_please_config,
   combine flags found there with those in ARGV in order of precedence:
   1) ARGV
   2) ./.check_please
