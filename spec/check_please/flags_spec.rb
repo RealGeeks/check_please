@@ -98,4 +98,21 @@ RSpec.describe CheckPlease::Flags do
     specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
+
+  describe "reject_paths" do
+    it "defaults to an empty array" do
+      expect( flags.reject_paths ).to eq( [] )
+    end
+
+    spec_body = ->(_example) {
+      f = flags
+      f.reject_paths = "/foo"
+      expect( f.reject_paths ).to eq( [ "/foo" ] )
+      f.reject_paths = "/bar"
+      expect( f.reject_paths ).to eq( [ "/foo", "/bar" ] )
+    }
+
+    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the list doesn't persist between instances", &spec_body
+  end
 end

@@ -106,7 +106,17 @@ module CheckPlease
 
     flag.cli_long = "--select-paths PATH_EXPR"
     flag.description = [
-      "Only record diffs matching the provided PATH expression.",
+      "ONLY record diffs matching the provided PATH expression.",
+      "  May be repeated; values will be treated as an 'OR' list.",
+    ]
+  end
+
+  Flags.define :reject_paths do |flag|
+    flag.reentrant
+
+    flag.cli_long = "--reject-paths PATH_EXPR"
+    flag.description = [
+      "DON'T record diffs matching the provided PATH expression.",
       "  May be repeated; values will be treated as an 'OR' list.",
     ]
   end

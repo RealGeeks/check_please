@@ -274,5 +274,22 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,          can: "dude" )
     end
 
+    it "can be told to NOT record diffs matching ONE specified path" do
+      diffs = invoke!(reference, candidate, reject_paths: ["/words"])
+      expect( diffs.length ).to eq( 3 )
+
+      expect( diffs["/name"]     ).to eq_diff( :mismatch, "/name",     ref: "The Answer", can: "Charlie" )
+      expect( diffs["/meta/foo"] ).to eq_diff( :mismatch, "/meta/foo", ref: "spam",       can: "foo" )
+      expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs",       can: nil )
+    end
+
+    it "can be told to NOT record diffs matching TWO specified paths" do
+      diffs = invoke!(reference, candidate, reject_paths: ["/name", "/words"])
+      expect( diffs.length ).to eq( 2 )
+
+      expect( diffs["/meta/foo"] ).to eq_diff( :mismatch, "/meta/foo", ref: "spam", can: "foo" )
+      expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs", can: nil )
+    end
+
   end
 end

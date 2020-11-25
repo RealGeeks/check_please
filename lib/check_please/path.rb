@@ -20,6 +20,9 @@ module CheckPlease
       if flags.select_paths.length > 0
         return flags.select_paths.none?(&matches)
       end
+      if flags.reject_paths.length > 0
+        return flags.reject_paths.any?(&matches)
+      end
       false
     end
 
