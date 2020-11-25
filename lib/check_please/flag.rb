@@ -2,7 +2,8 @@ module CheckPlease
 
   class Flag
     attr_accessor :name
-    attr_accessor :default
+    attr_writer   :default # reader is defined below
+    attr_accessor :default_proc
     attr_accessor :description
     attr_accessor :cli_long
     attr_accessor :cli_short
@@ -15,6 +16,19 @@ module CheckPlease
       freeze
     end
 
+    def default
+      if default_proc
+        default_proc.call
+      else
+        @default
+      end
+    end
+
+    def reentrant
+      @reentrant = true
+      self.default_proc = ->{ Array.new }
+    end
+
     def coerce(&block)
       @coercer = block
     end
@@ -23,10 +37,17 @@ module CheckPlease
       @validator = block
     end
 
-    def coerce_and_validate(value)
+    protected
+
+    def __set__(value, on:)
       val = _coerce(value)
       _validate(val)
-      return val
+      if @reentrant
+        on[name] ||= []
+        on[name].concat(Array(val))
+      else
+        on[name] = val
+      end
     end
 
     private

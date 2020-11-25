@@ -101,4 +101,14 @@ module CheckPlease
     ]
   end
 
+  Flags.define :select_paths do |flag|
+    flag.reentrant
+
+    flag.cli_long = "--select-paths PATH_EXPR"
+    flag.description = [
+      "Only record diffs matching the provided PATH expression.",
+      "  May be repeated; values will be treated as an 'OR' list.",
+    ]
+  end
+
 end

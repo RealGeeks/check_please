@@ -81,4 +81,21 @@ RSpec.describe CheckPlease::Flags do
       expect( flags(max_depth: "42").max_depth ).to eq( 42 )
     end
   end
+
+  describe "select_paths" do
+    it "defaults to an empty array" do
+      expect( flags.select_paths ).to eq( [] )
+    end
+
+    spec_body = ->(_example) {
+      f = flags
+      f.select_paths = "/foo"
+      expect( f.select_paths ).to eq( [ "/foo" ] )
+      f.select_paths = "/bar"
+      expect( f.select_paths ).to eq( [ "/foo", "/bar" ] )
+    }
+
+    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the list doesn't persist between instances", &spec_body
+  end
 end

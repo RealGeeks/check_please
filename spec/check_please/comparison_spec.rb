@@ -254,5 +254,25 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you",        can: "we" )
       expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you",        can: "I" )
     end
+
+    it "can be told to record ONLY diffs matching ONE specified path" do
+      diffs = invoke!(reference, candidate, select_paths: ["/words"])
+      expect( diffs.length ).to eq( 3 )
+
+      expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you", can: "we" )
+      expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you", can: "I" )
+      expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,   can: "dude" )
+    end
+
+    it "can be told to record ONLY diffs matching TWO specified paths" do
+      diffs = invoke!(reference, candidate, select_paths: ["/name", "/words"])
+      expect( diffs.length ).to eq( 4 )
+
+      expect( diffs["/name"]     ).to eq_diff( :mismatch, "/name",     ref: "The Answer", can: "Charlie" )
+      expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you",        can: "we" )
+      expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you",        can: "I" )
+      expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,          can: "dude" )
+    end
+
   end
 end

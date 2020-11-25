@@ -27,8 +27,7 @@ module CheckPlease
 
       setter = :"#{flag.name}="
       define_method(setter) { |value|
-        val = flag.coerce_and_validate(value)
-        @attributes[flag.name] = val
+        flag.send :__set__, value, on: @attributes
       }
     end
 

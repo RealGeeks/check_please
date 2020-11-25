@@ -44,6 +44,7 @@ module CheckPlease
     end
 
     def record(ref, can, path, type)
+      return if path.excluded?(flags)
       self << Diff.new(type, path, ref, can)
     end
 
