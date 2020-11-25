@@ -176,6 +176,13 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
     (but maybe just the existing :type_mismatch diffs?)
   * another "possibly support plugins" expansion point here
 * more output formats, maybe?
+* look for a config file in ./.check_please_config or ~/.check_please_config,
+  combine flags found there with those in ARGV in order of precedence:
+  1) ARGV
+  2) ./.check_please
+  3) ~/.check_please
+  * but this may not actually be worth the time and complexity to implement, so
+    think about this first...
 
 ## Development
 
