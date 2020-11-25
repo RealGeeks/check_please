@@ -13,7 +13,7 @@ RSpec.describe CheckPlease::Flags do
     end
 
     it "can't be set to just anything" do
-      expect { flags(format: :wibble) }.to raise_error( ArgumentError )
+      expect { flags(format: :wibble) }.to raise_error( CheckPlease::InvalidFlag )
     end
   end
 
@@ -27,11 +27,11 @@ RSpec.describe CheckPlease::Flags do
     end
 
     it "can't be set to zero" do
-      expect { flags(max_diffs: 0) }.to raise_error( ArgumentError )
+      expect { flags(max_diffs: 0) }.to raise_error( CheckPlease::InvalidFlag )
     end
 
     it "can't be set to a negative integer" do
-      expect { flags(max_diffs: -1) }.to raise_error( ArgumentError )
+      expect { flags(max_diffs: -1) }.to raise_error( CheckPlease::InvalidFlag )
     end
 
     it "coerces a string value to an integer" do
@@ -70,11 +70,11 @@ RSpec.describe CheckPlease::Flags do
     end
 
     it "can't be set to zero" do
-      expect { flags(max_depth: 0) }.to raise_error( ArgumentError )
+      expect { flags(max_depth: 0) }.to raise_error( CheckPlease::InvalidFlag )
     end
 
     it "can't be set to a negative integer" do
-      expect { flags(max_depth: -1) }.to raise_error( ArgumentError )
+      expect { flags(max_depth: -1) }.to raise_error( CheckPlease::InvalidFlag )
     end
 
     it "coerces a string value to an integer" do
@@ -114,5 +114,10 @@ RSpec.describe CheckPlease::Flags do
 
     specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
+  end
+
+  specify "select_paths and reject_paths can't both be set" do
+    expect { flags(select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
+      raise_error( CheckPlease::InvalidFlag )
   end
 end

@@ -5,8 +5,12 @@ module CheckPlease
   class Flags
     BY_NAME = {} ; private_constant :BY_NAME
 
+    def self.[](name)
+      BY_NAME[name.to_sym]
+    end
+
     def self.define(name, &block)
-      flag = Flag.new(name: name, &block)
+      flag = Flag.new(name: name.to_sym, &block)
       BY_NAME[flag.name] = flag
       define_accessors flag
 
@@ -27,7 +31,7 @@ module CheckPlease
 
       setter = :"#{flag.name}="
       define_method(setter) { |value|
-        flag.send :__set__, value, on: @attributes
+        flag.send :__set__, value, on: @attributes, flags: self
       }
     end
 

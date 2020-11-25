@@ -59,7 +59,7 @@ module CheckPlease
 
     flag.coerce &:to_sym
     flag.default = CheckPlease::Printers::DEFAULT_FORMAT
-    flag.validate { |value| allowed_values.include?(value) }
+    flag.validate { |flags, value| allowed_values.include?(value) }
 
     flag.cli_long = "--format FORMAT"
     flag.cli_short = "-f FORMAT"
@@ -71,7 +71,7 @@ module CheckPlease
 
   Flags.define :max_diffs do |flag|
     flag.coerce &:to_i
-    flag.validate { |value| value.to_i > 0 }
+    flag.validate { |flags, value| value.to_i > 0 }
 
     flag.cli_long = "--max-diffs MAX_DIFFS"
     flag.cli_short = "-n MAX_DIFFS"
@@ -91,7 +91,7 @@ module CheckPlease
 
   Flags.define :max_depth do |flag|
     flag.coerce &:to_i
-    flag.validate { |value| value.to_i > 0 }
+    flag.validate { |flags, value| value.to_i > 0 }
 
     flag.cli_long = "--max_depth MAX_DEPTH"
     flag.cli_short = "-d MAX_DEPTH"
@@ -103,21 +103,25 @@ module CheckPlease
 
   Flags.define :select_paths do |flag|
     flag.reentrant
+    flag.mutually_exclusive_to :reject_paths
 
     flag.cli_long = "--select-paths PATH_EXPR"
     flag.description = [
       "ONLY record diffs matching the provided PATH expression.",
       "  May be repeated; values will be treated as an 'OR' list.",
+      "  Can't be combined with --reject-paths.",
     ]
   end
 
   Flags.define :reject_paths do |flag|
     flag.reentrant
+    flag.mutually_exclusive_to :select_paths
 
     flag.cli_long = "--reject-paths PATH_EXPR"
     flag.description = [
       "DON'T record diffs matching the provided PATH expression.",
       "  May be repeated; values will be treated as an 'OR' list.",
+      "  Can't be combined with --select-paths.",
     ]
   end
 

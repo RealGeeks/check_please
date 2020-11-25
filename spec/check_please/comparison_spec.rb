@@ -291,5 +291,9 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs", can: nil )
     end
 
+    specify "attempting to invoke with both :select_paths and :reject_paths asplodes" do
+      expect { invoke!(reference, candidate, select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
+        raise_error( CheckPlease::InvalidFlag )
+    end
   end
 end

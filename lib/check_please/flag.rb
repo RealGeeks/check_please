@@ -9,6 +9,7 @@ module CheckPlease
     attr_accessor :cli_short
 
     def initialize(attrs = {})
+      @validators = []
       attrs.each do |name, value|
         set_attribute! name, value
       end
@@ -28,20 +29,24 @@ module CheckPlease
       @coercer = block
     end
 
+    def mutually_exclusive_to(flag_name)
+      @validators << ->(flags, _) { flags.send(flag_name).empty? }
+    end
+
     def reentrant
       @reentrant = true
       self.default_proc = ->{ Array.new }
     end
 
     def validate(&block)
-      @validator = block
+      @validators << block
     end
 
     protected
 
-    def __set__(value, on:)
+    def __set__(value, on:, flags:)
       val = _coerce(value)
-      _validate(val)
+      _validate(flags, val)
       if @reentrant
         on[name] ||= []
         on[name].concat(Array(val))
@@ -57,9 +62,9 @@ module CheckPlease
       @coercer.call(value)
     end
 
-    def _validate(value)
-      return if @validator.nil?
-      return if @validator.call(value) == true
+    def _validate(flags, value)
+      return if @validators.empty?
+      return if @validators.all? { |block| block.call(flags, value) }
       raise InvalidFlag, "#{value.inspect} is not a legal value for #{name}"
     end
 
