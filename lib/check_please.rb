@@ -55,17 +55,17 @@ module CheckPlease
 
 
   Flags.define :format do |flag|
-    legal_values = CheckPlease::Printers::FORMATS.sort
+    allowed_values = CheckPlease::Printers::FORMATS.sort
 
     flag.coerce &:to_sym
     flag.default = CheckPlease::Printers::DEFAULT_FORMAT
-    flag.validate { |value| legal_values.include?(value) }
+    flag.validate { |value| allowed_values.include?(value) }
 
     flag.cli_long = "--format FORMAT"
     flag.cli_short = "-f FORMAT"
     flag.description = [
-      "format in which to present diffs",
-      "  (available formats: [#{legal_values.join(", ")}])",
+      "Format in which to present diffs.",
+      "  (Allowed values: [#{allowed_values.join(", ")}])",
     ]
   end
 
@@ -75,7 +75,7 @@ module CheckPlease
 
     flag.cli_long = "--max-diffs MAX_DIFFS"
     flag.cli_short = "-n MAX_DIFFS"
-    flag.description = "Stop after encountering a specified number of diffs"
+    flag.description = "Stop after encountering a specified number of diffs."
   end
 
   Flags.define :fail_fast do |flag|
@@ -84,7 +84,7 @@ module CheckPlease
 
     flag.cli_long = "--fail-fast"
     flag.description = [
-      "Stop after encountering the very first diff",
+      "Stop after encountering the first diff.",
       "  (equivalent to '--max-diffs 1')",
     ]
   end
@@ -96,7 +96,7 @@ module CheckPlease
     flag.cli_long = "--max_depth MAX_DEPTH"
     flag.cli_short = "-d MAX_DEPTH"
     flag.description = [
-      "Limit the number of levels to descend when comparing documents",
+      "Limit the number of levels to descend when comparing documents.",
       "  (NOTE: root has depth = 1)",
     ]
   end
