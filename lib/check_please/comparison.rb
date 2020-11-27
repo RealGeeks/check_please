@@ -10,9 +10,8 @@ module CheckPlease
       @flags = Flags(flags) # whoa, it's almost like Java in here
       @diffs = Diffs.new(flags: @flags)
 
-      root = CheckPlease::Path.new
       catch(:max_diffs_reached) do
-        compare reference, candidate, root
+        compare reference, candidate, CheckPlease::Path.root
       end
       diffs
     end
@@ -21,16 +20,14 @@ module CheckPlease
     attr_reader :diffs, :flags
 
     def compare(ref, can, path)
-      if (d = diffs.flags.max_depth)
-        return if path.depth > d + 1
-      end
+      return if path.excluded?(flags)
 
       case types(ref, can)
       when [ :array, :array ] ; compare_arrays ref, can, path
       when [ :hash,  :hash  ] ; compare_hashes ref, can, path
       when [ :other, :other ] ; compare_others ref, can, path
       else
-        diffs.record ref, can, path, :type_mismatch
+        record_diff ref, can, path, :type_mismatch
       end
     end
 
@@ -54,8 +51,8 @@ module CheckPlease
           can = can_array[i]
 
           case
-          when ref_array.length < n ; diffs.record ref, can, new_path, :extra
-          when can_array.length < n ; diffs.record ref, can, new_path, :missing
+          when ref_array.length < n ; record_diff ref, can, new_path, :extra
+          when can_array.length < n ; record_diff ref, can, new_path, :missing
           else
             compare ref, can, new_path
           end
@@ -71,7 +68,7 @@ module CheckPlease
         def record_missing_keys(ref_hash, can_hash, path)
           keys = ref_hash.keys - can_hash.keys
           keys.each do |k|
-            diffs.record ref_hash[k], nil, path + k, :missing
+            record_diff ref_hash[k], nil, path + k, :missing
           end
         end
 
@@ -85,14 +82,19 @@ module CheckPlease
         def record_extra_keys(ref_hash, can_hash, path)
           keys = can_hash.keys - ref_hash.keys
           keys.each do |k|
-            diffs.record nil, can_hash[k], path + k, :extra
+            record_diff nil, can_hash[k], path + k, :extra
           end
         end
 
       def compare_others(ref, can, path)
         return if ref == can
-        diffs.record ref, can, path, :mismatch
+        record_diff ref, can, path, :mismatch
       end
+
+    def record_diff(ref, can, path, type)
+      diff = Diff.new(type, path, ref, can)
+      diffs << diff
+    end
   end
 
 end

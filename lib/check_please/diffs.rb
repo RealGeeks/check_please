@@ -43,11 +43,6 @@ module CheckPlease
       @hash[diff.path] = diff
     end
 
-    def record(ref, can, path, type)
-      return if path.excluded?(flags)
-      self << Diff.new(type, path, ref, can)
-    end
-
     def data
       @list.map(&:attributes)
     end
