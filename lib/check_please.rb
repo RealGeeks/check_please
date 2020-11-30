@@ -105,6 +105,7 @@ module CheckPlease
     flag.reentrant
     flag.mutually_exclusive_to :reject_paths
 
+    flag.cli_short = "-s PATH_EXPR"
     flag.cli_long = "--select-paths PATH_EXPR"
     flag.description = [
       "ONLY record diffs matching the provided PATH expression.",
@@ -117,6 +118,7 @@ module CheckPlease
     flag.reentrant
     flag.mutually_exclusive_to :select_paths
 
+    flag.cli_short = "-r PATH_EXPR"
     flag.cli_long = "--reject-paths PATH_EXPR"
     flag.description = [
       "DON'T record diffs matching the provided PATH expression.",
