@@ -5,7 +5,7 @@ module CheckPlease
     autoload :Parser, "check_please/cli/runner"
 
     def self.run(exe_file_name)
-      Runner.new(__FILE__).run(*ARGV.dup)
+      Runner.new(exe_file_name).run(*ARGV.dup)
     end
   end
 

@@ -5,7 +5,7 @@ module CLI
 
   class Parser
     def initialize(exe_file_name)
-      @exe_file_name = exe_file_name
+      @exe_file_name = File.basename(exe_file_name)
     end
 
     # Unfortunately, OptionParser *really* wants to use closures.  I haven't
