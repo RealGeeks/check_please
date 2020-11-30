@@ -168,6 +168,7 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
 
 ## TODO (maybe)
 
+* document flags for rspec matcher
 * command line flags for :allthethings:!
   * sort by path?
 * detect timestamps and compare after parsing?
