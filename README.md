@@ -59,10 +59,15 @@ out!
 
 ### From Ruby
 
+See also: [./usage_examples.rb](usage_examples.rb).
+
 Create two strings, each containing a JSON or YAML document, and pass them to
 `CheckPlease.render_diff`.  You'll get back a third string containing a report
-of all the differences CheckPlease found in the two JSON strings.  (See also:
-[./usage_examples.rb](usage_examples.rb).)
+of all the differences CheckPlease found in the two JSON strings.
+
+Or, if you'd like to inspect the diffs in your own way, use `CheckPlease.diff`
+instead.  You'll get back a `CheckPlease::Diffs` custom collection that
+contains `CheckPlease::Diff` instances.
 
 ### Understanding the Output
 
