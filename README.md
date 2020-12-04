@@ -170,6 +170,8 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
 
 * document flags for rspec matcher
 * command line flags for :allthethings:!
+  * change display width for table format
+    (for example, "2020-07-16T19:42:41.312978" gets cut off)
   * sort by path?
 * detect timestamps and compare after parsing?
   * ignore sub-second precision (option / CLI flag)?
