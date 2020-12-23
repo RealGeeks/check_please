@@ -127,4 +127,26 @@ module CheckPlease
     ]
   end
 
+  Flags.define :match_by_key do |flag|
+    flag.reentrant
+
+    flag.cli_long = "--match-by-key FOO"
+    flag.description = [
+      "Specify how to match reference/candidate pairs in arrays."
+    ]
+    ###############################################
+    ##                                           ##
+    ##  ########   #####    ######      #####    ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##      #####    ######      #####    ##
+    ##                                           ##
+    ###############################################
+    # TODO: finish the description above
+    ###############################################
+  end
+
 end

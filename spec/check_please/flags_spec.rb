@@ -120,4 +120,16 @@ RSpec.describe CheckPlease::Flags do
     expect { flags(select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
       raise_error( CheckPlease::InvalidFlag )
   end
+
+  describe "match_by_key" do
+    it "defaults to an empty array" do
+      expect( flags.match_by_key ).to eq( [] )
+    end
+
+    it "contains path/key expression" do
+      f = flags
+      f.match_by_key = "/foo[id,name]"
+      expect( f.match_by_key ).to eq( [ "/foo[id,name]" ] )
+    end
+  end
 end
