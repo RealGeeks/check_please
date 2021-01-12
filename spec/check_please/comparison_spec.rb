@@ -182,29 +182,34 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs[3] ).to eq_diff( :mismatch, "/b/d/f/g", ref: 7, can: 8 )
     end
 
-    it "only has the first diff when passed a max_depth of 1" do
+    it "has no diffs when passed a max_depth of 1" do
       diffs = invoke!(reference, candidate, max_depth: 1)
+      expect( diffs.length ).to eq( 0 )
+    end
+
+    it "only has the first diff when passed a max_depth of 2" do
+      diffs = invoke!(reference, candidate, max_depth: 2)
       expect( diffs.length ).to eq( 1 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a", ref: 1, can: 2 )
     end
 
-    it "only has the first two diffs when passed a max_depth of 2" do
-      diffs = invoke!(reference, candidate, max_depth: 2)
+    it "only has the first two diffs when passed a max_depth of 3" do
+      diffs = invoke!(reference, candidate, max_depth: 3)
       expect( diffs.length ).to eq( 2 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",   ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c", ref: 3, can: 4 )
     end
 
-    it "only has the first three diffs when passed a max_depth of 3" do
-      diffs = invoke!(reference, candidate, max_depth: 3)
+    it "only has the first three diffs when passed a max_depth of 4" do
+      diffs = invoke!(reference, candidate, max_depth: 4)
       expect( diffs.length ).to eq( 3 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",     ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",   ref: 3, can: 4 )
       expect( diffs[2] ).to eq_diff( :mismatch, "/b/d/e", ref: 5, can: 6 )
     end
 
-    it "has all four diffs when passed a max_depth of 4" do
-      diffs = invoke!(reference, candidate, max_depth: 4)
+    it "has all four diffs when passed a max_depth of 5" do
+      diffs = invoke!(reference, candidate, max_depth: 5)
       expect( diffs.length ).to eq( 4 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",       ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",     ref: 3, can: 4 )
