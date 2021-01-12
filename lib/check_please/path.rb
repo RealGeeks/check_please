@@ -1,104 +1,65 @@
 module CheckPlease
 
-  class Path
-    class AbstractSegment
-      def self.new(name_or_instance = nil)
-        case name_or_instance
-        when self        ; name_or_instance
-        when String, nil ; super
-        else             ; raise ArgumentError
-        end
-      end
+  autoload :InvalidPathSegment, "check_please/path_segment"
 
-      attr_reader :name
-      alias_method :to_s, :name
-
-      def initialize(name)
-        @name = name.to_s.strip
-        complain_about_invalid_name! if @name =~ %r(\s)
-        freeze
-        validate_name!
-      end
-
-      def empty?
-        name.empty?
-      end
-
-      private
-
-      def validate_name!
-        # subclass may override
-      end
-
-      def complain_about_invalid_name!
-        msg = "#{name.inspect} is not a valid #{self.class} name!"
-        raise ArgumentError, msg
-      end
-    end
-
-    class Segment < AbstractSegment
-      def key
-        return nil unless name =~ /^([^=]+)=/
-        $1.to_sym
-      end
-
-      def match?(segment_expr)
-        if segment_expr.to_s.count(":").zero?
-          return name == segment_expr.to_s # the easy way!
-        else
-          SegmentExpr.new(segment_expr).match?(name)
-        end
-      end
-
-      private
-
-      def validate_name!
-        complain_about_invalid_name! if name.include?(":")
-      end
-    end
-
-    class SegmentExpr < AbstractSegment
-      def match?(segment_name)
-        !!( segment_name.to_s =~ /^#{key}=/ )
-      end
-
-      def key
-        name.sub(/^:/, "").to_sym
-      end
-
-      private
-
-      def validate_name!
-        complain_about_invalid_name! unless name.start_with?(":")
-        complain_about_invalid_name! unless name.count(":") == 1
-      end
-    end
+  class InvalidPath < ArgumentError
+    include CheckPlease::Error
   end
+
+
 
   class Path
     SEPARATOR = "/"
 
     def self.root
-      new
+      new('/')
     end
 
+
+
     attr_reader :to_s, :segments
-    def initialize(segments = [])
-      case segments
-      when String
-        @segments = segments.split(SEPARATOR)
-        @segments.shift until @segments.empty? || @segments.first.length > 0
-      when nil, Array
-        @segments = Array(segments)
+    def initialize(name_or_segments = [])
+      case name_or_segments
+      when String, Symbol, Numeric, nil
+        maybe_segments = name_or_segments.to_s.split(SEPARATOR)
+        maybe_segments.shift until maybe_segments.empty? || maybe_segments.first =~ /\S/
+      when Array
+        maybe_segments = name_or_segments
       else
-        raise ArgumentError, "not sure what to do with #{segments.inspect}"
+        raise InvalidPath, "not sure what to do with #{name_or_segments.inspect}"
       end
+
+      segments = Array(maybe_segments).map { |e| PathSegment.new(e) }
+      if segments.any?(&:empty?)
+        raise InvalidPath, "#{self.class.name} cannot contain empty segments"
+      end
+
+      @segments = Array(segments)
+
       @to_s = SEPARATOR + @segments.join(SEPARATOR)
       freeze
+    rescue PathSegment::IllegalName => e
+      raise InvalidPath, e.message
     end
 
     def +(new_basename)
-      self.class.new( Array(@segments) + Array(new_basename.to_s) )
+      new_segments = ( self.segments + Array(new_basename) ).map { |e| PathSegment.new(e) }
+      self.class.new(new_segments)
+    end
+
+    def ==(other)
+      self.to_s == other.to_s
+    end
+
+    def ancestors
+      list = []
+      p = self
+      loop do
+        p = p.parent
+        break if p.nil?
+        list.unshift p
+      end
+      list
     end
 
     def basename
@@ -106,7 +67,7 @@ module CheckPlease
     end
 
     def depth
-      1 + @segments.length
+      1 + segments.length
     end
 
     def excluded?(flags)
@@ -120,37 +81,69 @@ module CheckPlease
     end
 
     def inspect
-      "<CheckPlease::Path '#{to_s}'>"
+      "<#{self.class.name} '#{to_s}'>"
+    end
+
+    def key_for_compare(flags)
+      mbk_exprs = flags.match_by_key.select { |mbk| match?(mbk) }
+      case mbk_exprs.length
+      when 0 ; nil
+      when 1 ; self.class.new(mbk_exprs.first).segments.last.key
+      else   ; raise "More than one match_by_key expression for path '#{self}'"
+      end
+    end
+
+    def match?(path_or_string)
+      return true if self == path_or_string
+
+      other = self.class.new(path_or_string)
+      return false unless other.segments.length == self.segments.length
+      seg_pairs = self.segments.zip(other.segments)
+      seg_pairs.all? { |a, b| a.match?(b) }
+    end
+
+    def parent
+      return nil if root? # TODO: consider the Null Object pattern
+      self.class.new(segments[0..-2])
     end
 
     def root?
-      to_s == SEPARATOR
+      @segments.empty?
     end
 
     private
 
     def explicitly_excluded?(flags)
-      flags.reject_paths.any?( &method(:match?) )
+      return false if flags.reject_paths.empty?
+      return true if self_on_list?(flags.reject_paths)
+      return true if ancestor_on_list?(flags.reject_paths)
+      false
     end
 
     def implicitly_excluded?(flags)
       return false if flags.select_paths.empty?
-      flags.select_paths.none?( &method(:match?) )
-    end
-
-    # leaving this here for a while in case it needs to grow into a public method
-    def match?(path_expr)
-      to_s.include?(path_expr)
+      return false if self_on_list?(flags.select_paths)
+      return false if ancestor_on_list?(flags.select_paths)
+      true
     end
 
     def too_deep?(flags)
       return false if flags.max_depth.nil?
-      flags.max_depth + 1 < depth
+      depth > flags.max_depth
     end
-  end
 
-  class PathExpr < Path
+    # O(n) check to see if the path itself is on a list
+    def self_on_list?(paths)
+      paths.any? { |path| self == path }
+    end
 
+    # O(n^2) check to see if any of the path's ancestors are on a list
+    # (as of this writing, this should never actually happen, but I'm being thorough)
+    def ancestor_on_list?(paths)
+      paths.any? { |path|
+        ancestors.any? { |ancestor| ancestor == path }
+      }
+    end
   end
 
 end

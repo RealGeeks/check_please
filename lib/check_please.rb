@@ -14,6 +14,7 @@ module CheckPlease
   autoload :Flag,        "check_please/flag"
   autoload :Flags,       "check_please/flags"
   autoload :Path,        "check_please/path"
+  autoload :PathSegment, "check_please/path_segment"
   autoload :Printers,    "check_please/printers"
   autoload :Refinements, "check_please/refinements"
 end
