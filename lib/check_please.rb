@@ -133,7 +133,8 @@ module CheckPlease
 
     flag.cli_long = "--match-by-key FOO"
     flag.description = [
-      "Specify how to match reference/candidate pairs in arrays."
+      "Specify how to match reference/candidate pairs in arrays.",
+      "NOTE: this does not yet handle non-string keys."
     ]
     ###############################################
     ##                                           ##

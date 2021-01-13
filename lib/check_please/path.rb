@@ -84,11 +84,13 @@ module CheckPlease
       "<#{self.class.name} '#{to_s}'>"
     end
 
+		# TODO: Naming Things
     def key_for_compare(flags)
-      mbk_exprs = flags.match_by_key.select { |mbk| match?(mbk) }
-      case mbk_exprs.length
+      mbks = flags.match_by_key.map { |e| self.class.new(e) }
+      matches = mbks.select { |mbk| mbk.parent.match?(self.to_s) }
+      case matches.length
       when 0 ; nil
-      when 1 ; self.class.new(mbk_exprs.first).segments.last.key
+      when 1 ; matches.first.segments.last.key
       else   ; raise "More than one match_by_key expression for path '#{self}'"
       end
     end

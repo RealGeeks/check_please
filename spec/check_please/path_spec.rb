@@ -356,17 +356,35 @@ RSpec.describe CheckPlease::Path do
     context "when given flags with no MBK expressions" do
       let(:flags) { flagify({}) }
 
+      it_returns nil, for_path: '/'
+      it_returns nil, for_path: '/id=42'
       it_returns nil, for_path: '/foo'
       it_returns nil, for_path: '/foo/id=42'
+      it_returns nil, for_path: '/foo/id=42/bar'
       it_returns nil, for_path: '/foo/id=42/bar/id=23'
       it_returns nil, for_path: '/foo/name=42/bar/id=23'
+    end
+
+    context "when given flags with a '/:id' MBK expression" do
+      let(:flags) { flagify(match_by_key: "/:id") }
+
+      it_returns "id", for_path: '/'
+      it_returns nil,  for_path: '/id=42'
+      it_returns nil,  for_path: '/foo'
+      it_returns nil,  for_path: '/foo/id=42'
+      it_returns nil,  for_path: '/foo/id=42/bar'
+      it_returns nil,  for_path: '/foo/id=42/bar/id=23'
+      it_returns nil,  for_path: '/foo/name=42/bar/id=23'
     end
 
     context "when given flags with a '/foo/:id' MBK expression" do
       let(:flags) { flagify(match_by_key: "/foo/:id") }
 
-      it_returns nil,  for_path: '/foo'
-      it_returns "id", for_path: '/foo/id=42'
+      it_returns nil,  for_path: '/'
+      it_returns nil,  for_path: '/id=42'
+      it_returns "id", for_path: '/foo'
+      it_returns nil,  for_path: '/foo/id=42'
+      it_returns nil,  for_path: '/foo/id=42/bar'
       it_returns nil,  for_path: '/foo/id=42/bar/id=23'
       it_returns nil,  for_path: '/foo/name=42/bar/id=23'
     end
@@ -374,19 +392,28 @@ RSpec.describe CheckPlease::Path do
     context "when given flags with a '/foo/:id/bar/:id' MBK expression" do
       let(:flags) { flagify(match_by_key: "/foo/:id/bar/:id") }
 
+      it_returns nil,  for_path: '/'
+      it_returns nil,  for_path: '/id=42'
       it_returns nil,  for_path: '/foo'
       it_returns nil,  for_path: '/foo/id=42'
-      it_returns "id", for_path: '/foo/id=42/bar/id=23'
+      it_returns "id", for_path: '/foo/id=42/bar'
+      it_returns nil,  for_path: '/foo/id=42/bar/id=23'
+      it_returns nil,  for_path: '/foo/name=42/bar'
       it_returns nil,  for_path: '/foo/name=42/bar/id=23'
     end
 
     context "when given flags with a '/foo/:name/bar/:id' MBK expression" do
       let(:flags) { flagify(match_by_key: "/foo/:name/bar/:id") }
 
+      it_returns nil,  for_path: '/'
+      it_returns nil,  for_path: '/id=42'
       it_returns nil,  for_path: '/foo'
       it_returns nil,  for_path: '/foo/id=42'
+      it_returns nil,  for_path: '/foo/id=42/bar'
       it_returns nil,  for_path: '/foo/id=42/bar/id=23'
-      it_returns "id", for_path: '/foo/name=42/bar/id=23'
+      it_returns "id", for_path: '/foo/name=42/bar'
+      it_returns nil,  for_path: '/foo/name=42/bar/id=23'
+      it_returns nil,  for_path: '/foo/name=42/bar/id=23'
     end
   end
 

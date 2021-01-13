@@ -147,6 +147,135 @@ RSpec.describe CheckPlease::Comparison do
     end
   end
 
+  describe "comparing arrays by keys" do
+    shared_examples "compare_arrays_by_key" do
+      specify "comparing [A,B] with [B,A] correctly matches up A and B using the :id value, resulting in zero diffs" do
+        diffs = invoke!( [a,b], [b,a], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 0 )
+      end
+
+      specify "comparing [A,B] with [A] complains that B is missing" do
+        diffs = invoke!( [a,b], [a], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/id=#{b[b_key_name]}", ref: b, can: nil )
+      end
+
+      specify "comparing [A,B] with [B] complains that A is missing" do
+        diffs = invoke!( [a,b], [b], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/id=#{a[a_key_name]}", ref: a, can: nil )
+      end
+
+      specify "comparing [A] with [A,B] complains that B is extra" do
+        diffs = invoke!( [a], [a,b], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/id=#{b[b_key_name]}", ref: nil, can: b )
+      end
+
+      specify "comparing [B] with [A,B] complains that B is extra" do
+        diffs = invoke!( [b], [a,b], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/id=#{a[a_key_name]}", ref: nil, can: a )
+      end
+
+      specify "comparing [A] with [A,A,B] complains that there are too many As" do
+        diffs = invoke!( [a], [a,b], match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/id=#{b[b_key_name]}", ref: nil, can: b )
+      end
+
+      specify "comparing two lists where the top-level elements can be matched by key but have different child values... works" do
+        ref = { "id" => 1, "deeply" => { "nested" => [ a, b ] } }
+        can = { "id" => 1, "deeply" => { "nested" => [ c, a ] } }
+
+        diffs = invoke!( [ref], [can], match_by_key: [ "/:id", "/:id/deeply/nested/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
+      end
+
+      specify "comparing [A,B] with [B,A] raises NoSuchKeyError if given a bogus key expression" do
+        expect { invoke!( [a,b], [b,a], match_by_key: [ "/:identifier" ] ) }.to \
+          raise_error(CheckPlease::NoSuchKeyError, /The reference hash at position 0 has no "identifier" key/)
+      end
+
+      specify "comparing [A,A] with [A] raises DuplicateKeyError" do
+        expect { invoke!( [a,a], [a], match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate reference element found/)
+      end
+
+      specify "comparing [A,A] with [A,A] raises DuplicateKeyError" do
+        expect { invoke!( [a,a], [a,a], match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate reference element found/)
+      end
+
+      specify "comparing [A] with [A,A] raises DuplicateKeyError" do
+        expect { invoke!( [a], [a,a], match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate candidate element found/)
+      end
+
+      specify "comparing [42] with [A] raises TypeMismatchError" do
+        expect { invoke!( [42], [a], match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::TypeMismatchError, /The element at position \d+ in the reference array is not a hash/)
+      end
+
+      specify "comparing [A] with [42] raises TypeMismatchError" do
+        expect { invoke!( [a], [42], match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::TypeMismatchError, /The element at position \d+ in the candidate array is not a hash/)
+      end
+    end
+
+    context "when both ref and can use strings for keys" do
+      let(:a) { { "id" => 1, "foo" => "bar" } }
+      let(:b) { { "id" => 2, "foo" => "bat" } }
+      let(:c) { { "id" => 2, "foo" => "yak" } }
+      let(:a_key_name) { "id" }
+      let(:b_key_name) { "id" }
+
+      include_examples "compare_arrays_by_key"
+    end
+
+    ###############################################
+    ##                                           ##
+    ##  ########   #####    ######      #####    ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##      #####    ######      #####    ##
+    ##                                           ##
+    ###############################################
+    # TODO: decide how to handle non-string keys. Symbols? Integers? E_CAN_OF_WORMS
+    ###############################################
+
+    # context "when ref keys are symbols and can keys are strings" do
+    #   let(:a) { { :id  => 1, :foo  => "bar" } }
+    #   let(:b) { { "id" => 2, "foo" => "bat" } }
+    #   let(:a_key_name) { :id }
+    #   let(:b_key_name) { "id" }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+
+    # context "when ref keys are strings and can keys are symbols" do
+    #   let(:a) { { "id" => 1, "foo" => "bar" } }
+    #   let(:b) { { :id  => 2, :foo  => "bat" } }
+    #   let(:a_key_name) { "id" }
+    #   let(:b_key_name) { :id }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+
+    # context "when both ref and can use symbols for keys" do
+    #   let(:a) { { :id => 1, :foo => "bar" } }
+    #   let(:b) { { :id => 2, :foo => "bat" } }
+    #   let(:a_key_name) { :id }
+    #   let(:b_key_name) { :id }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+  end
+
   context "when given an Array :reference and an Integer :candidate" do
     let(:reference) { [ 42 ] }
     let(:candidate) { 42 }
