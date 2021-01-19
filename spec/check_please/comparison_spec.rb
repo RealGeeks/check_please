@@ -209,13 +209,15 @@ RSpec.describe CheckPlease::Comparison do
         expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
       end
 
-      specify "comparing two lists where the top-level elements can be matched by key but have different child values... works (implicit key for top level)" do
-        pending
+      xspecify "comparing two lists where the top-level elements can be matched by key but have different child values... works (implicit key for top level)" do
         ref = [ { "id" => 1, "deeply" => { "nested" => [ a, b ] } } ]
         can = [ { "id" => 1, "deeply" => { "nested" => [ c, a ] } } ]
 
+$debug = true
+puts
         diffs = invoke!( ref, can, match_by_key: [         "/:id/deeply/nested/:id" ] )
         #                                          ^^^^^^^ no "/:id" here
+puts "", diffs
         expect( diffs.length ).to eq( 1 )
         expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
       end

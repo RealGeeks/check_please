@@ -277,7 +277,8 @@ RSpec.describe CheckPlease::Path do
 
   describe "#match?" do
     def self.it_returns(expected, when_given:)
-      specify "returns #{expected} when given #{when_given.inspect}" do
+      line = caller[0].split(":")[1]
+      specify "[line #{line}] returns #{expected} when given #{when_given.inspect}" do
         actual = subject.match?(when_given)
         _compare expected, actual
       end
@@ -294,6 +295,8 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo/id=42"
       it_returns false, when_given: "/foo/id=42/bar"
       it_returns false, when_given: "/foo/id=42/bar/id=23"
+      it_returns false, when_given: "/foo/:name"
+      it_returns false, when_given: "/foo/:name/bar/:id"
     end
 
     context "for path '/foo/id=42'" do
@@ -308,6 +311,7 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo/id=42/bar"
       it_returns false, when_given: "/foo/id=42/bar/id=23"
       it_returns false, when_given: "/foo/:id/bar/:id"
+      it_returns false, when_given: "/foo/:name"
       it_returns false, when_given: "/foo/:name/bar/:id"
     end
 
@@ -317,13 +321,14 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo"
       it_returns false, when_given: "/bar"
       it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"
+      # it_returns true,  when_given: "/foo/:id"
       it_returns false, when_given: "/foo/id=23"
       it_returns false, when_given: "/foo/id=42"
       it_returns false, when_given: "/foo/id=42/bar"
       it_returns true,  when_given: "/foo/id=42/bar/id=23"   # literal string equality
       it_returns false, when_given: "/foo/name=42/bar/id=23"
       it_returns true,  when_given: "/foo/:id/bar/:id"       # key/val expr in subject matches key expr in argument
+      it_returns false, when_given: "/foo/:name"             # first key expr in subject does not match
       it_returns false, when_given: "/foo/:name/bar/:id"     # first key expr in subject does not match
     end
 
@@ -340,13 +345,15 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo/id=42/bar/id=23"
       it_returns true,  when_given: "/foo/name=42/bar/id=23" # literal string equality
       it_returns false, when_given: "/foo/:id/bar/:id"       # first key expr in subject does not match
-      it_returns true,  when_given: "/foo/:name/bar/:id"     # key/val expr in subject matches key expr in argument
+      # it_returns true,  when_given: "/foo/:name"             # first key/val expr in subject matches first key expr in argument
+      it_returns true,  when_given: "/foo/:name/bar/:id"     # both key/val exprs in subject match key exprs in argument
     end
   end
 
   describe "#key_for_compare (note: MBK=match_by_key)" do
     def self.it_returns(expected, for_path:)
-      specify "returns #{expected.inspect} for path '#{for_path}'" do
+      line = caller[0].split(":")[1]
+      specify "[line #{line}] returns #{expected.inspect} for path '#{for_path}'" do
         the_path = pathify(for_path)
         actual = the_path.key_for_compare(flags)
         _compare expected, actual
@@ -394,7 +401,7 @@ RSpec.describe CheckPlease::Path do
 
       it_returns nil,  for_path: '/'
       it_returns nil,  for_path: '/id=42'
-      it_returns nil,  for_path: '/foo'
+      it_returns "id", for_path: '/foo'
       it_returns nil,  for_path: '/foo/id=42'
       it_returns "id", for_path: '/foo/id=42/bar'
       it_returns nil,  for_path: '/foo/id=42/bar/id=23'
@@ -405,15 +412,15 @@ RSpec.describe CheckPlease::Path do
     context "when given flags with a '/foo/:name/bar/:id' MBK expression" do
       let(:flags) { flagify(match_by_key: "/foo/:name/bar/:id") }
 
-      it_returns nil,  for_path: '/'
-      it_returns nil,  for_path: '/id=42'
-      it_returns nil,  for_path: '/foo'
-      it_returns nil,  for_path: '/foo/id=42'
-      it_returns nil,  for_path: '/foo/id=42/bar'
-      it_returns nil,  for_path: '/foo/id=42/bar/id=23'
-      it_returns "id", for_path: '/foo/name=42/bar'
-      it_returns nil,  for_path: '/foo/name=42/bar/id=23'
-      it_returns nil,  for_path: '/foo/name=42/bar/id=23'
+      it_returns nil,    for_path: '/'
+      it_returns nil,    for_path: '/id=42'
+      it_returns "name", for_path: '/foo'
+      it_returns nil,    for_path: '/foo/id=42'
+      it_returns nil,    for_path: '/foo/id=42/bar'
+      it_returns nil,    for_path: '/foo/id=42/bar/id=23'
+      it_returns "id",   for_path: '/foo/name=42/bar'
+      it_returns nil,    for_path: '/foo/name=42/bar/id=23'
+      it_returns nil,    for_path: '/foo/name=42/bar/id=23'
     end
   end
 

@@ -35,6 +35,8 @@ but be aware that CheckPlease uses a few words in a jargony way:
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
 
+TODO: document --match-by-key, including "key expressions" and "key/value expressions"
+
 ## Usage
 
 ### From the Terminal

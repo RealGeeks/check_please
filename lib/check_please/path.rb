@@ -8,6 +8,7 @@ module CheckPlease
 
 
 
+  # TODO: this class is getting a bit large; maybe split out some of the stuff that uses flags?
   class Path
     SEPARATOR = "/"
 
@@ -29,7 +30,7 @@ module CheckPlease
         raise InvalidPath, "not sure what to do with #{name_or_segments.inspect}"
       end
 
-      segments = Array(maybe_segments).map { |e| PathSegment.new(e) }
+      segments = Array(maybe_segments).map { |e| PathSegment.reify(e) }
       if segments.any?(&:empty?)
         raise InvalidPath, "#{self.class.name} cannot contain empty segments"
       end
@@ -43,7 +44,8 @@ module CheckPlease
     end
 
     def +(new_basename)
-      new_segments = ( self.segments + Array(new_basename) ).map { |e| PathSegment.new(e) }
+      new_segments = self.segments.dup
+      new_segments << new_basename # don't reify here; it'll get done on Path#initialize
       self.class.new(new_segments)
     end
 
@@ -55,8 +57,8 @@ module CheckPlease
       list = []
       p = self
       loop do
+        break if p.root?
         p = p.parent
-        break if p.nil?
         list.unshift p
       end
       list
@@ -71,7 +73,7 @@ module CheckPlease
     end
 
     def excluded?(flags)
-      return false if root?
+      return false if root? # that would just be silly
 
       return true if too_deep?(flags)
       return true if explicitly_excluded?(flags)
@@ -86,12 +88,14 @@ module CheckPlease
 
 		# TODO: Naming Things
     def key_for_compare(flags)
-      mbks = flags.match_by_key.map { |e| self.class.new(e) }
-      matches = mbks.select { |mbk| mbk.parent.match?(self.to_s) }
+      kexps = unpack_key_exprs(flags)
+      matches = kexps \
+        .select { |e| e.parent.match?(self.to_s) }
+        .uniq(&:to_s) # have to use #to_s or implement #hash and #eql? in horrible ways
       case matches.length
       when 0 ; nil
       when 1 ; matches.first.segments.last.key
-      else   ; raise "More than one match_by_key expression for path '#{self}'"
+      else   ; raise "More than one match_by_key expression for path '#{self}': #{matches.map(&:to_s).inspect}"
       end
     end
 
@@ -115,6 +119,14 @@ module CheckPlease
 
     private
 
+    # O(n^2) check to see if any of the path's ancestors are on a list
+    # (as of this writing, this should never actually happen, but I'm being thorough)
+    def ancestor_on_list?(paths)
+      paths.any? { |path|
+        ancestors.any? { |ancestor| ancestor == path }
+      }
+    end
+
     def explicitly_excluded?(flags)
       return false if flags.reject_paths.empty?
       return true if self_on_list?(flags.reject_paths)
@@ -129,23 +141,34 @@ module CheckPlease
       true
     end
 
-    def too_deep?(flags)
-      return false if flags.max_depth.nil?
-      depth > flags.max_depth
-    end
-
     # O(n) check to see if the path itself is on a list
     def self_on_list?(paths)
       paths.any? { |path| self == path }
     end
 
-    # O(n^2) check to see if any of the path's ancestors are on a list
-    # (as of this writing, this should never actually happen, but I'm being thorough)
-    def ancestor_on_list?(paths)
-      paths.any? { |path|
-        ancestors.any? { |ancestor| ancestor == path }
-      }
+    def too_deep?(flags)
+      return false if flags.max_depth.nil?
+      depth > flags.max_depth
     end
+
+    def unpack_key_exprs(flags)
+      list = flags.match_by_key.map { |e| self.class.new(e) }
+
+      # The list might have a compound key expression like "/foo/:id/bar/:name".
+      # If so, unpack it into [ "/foo/:id", "/foo/:id/bar/:name" ]
+      list += list.map { |key_expr|
+        key_expr.ancestors.map { |ancestor| # nested lists
+          ancestor if ancestor.segments.last&.key_expr? # nils
+        }
+      }
+
+      list \
+        .flatten         # get rid of nested lists
+        .compact         # get rid of nils
+        .uniq            # get rid of duplicates
+        .sort_by(&:to_s) # this is just gratuitous :)
+    end
+
   end
 
 end

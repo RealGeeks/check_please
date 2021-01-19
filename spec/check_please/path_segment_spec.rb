@@ -8,48 +8,48 @@ RSpec.describe CheckPlease::PathSegment do
     end
   end
 
-  describe ".new" do
+  describe ".reify" do
     it "returns the instance when given an instance of itself" do
-      foo = described_class.new("foo")
-      returned = described_class.new(foo)
+      foo = described_class.reify("foo")
+      returned = described_class.reify(foo)
       expect( returned ).to be( foo ) # object identity check
     end
 
     it "raises CheckPlease::PathSegment::IllegalName when given a string containing a space between non-space characters " do
-      expect { described_class.new("hey bob") }.to \
+      expect { described_class.reify("hey bob") }.to \
         raise_error( CheckPlease::PathSegment::IllegalName )
     end
 
     it "returns an empty instance with name='' when given no arguments" do
-      seg = described_class.new()
+      seg = described_class.reify()
       expect( seg      ).to be_a(described_class)
       expect( seg.name ).to eq( "" )
       expect( seg      ).to be_empty
     end
 
     it "returns an instance with name='foo' when given 'foo' (a string)" do
-      seg = described_class.new("foo")
+      seg = described_class.reify("foo")
       expect( seg      ).to     be_a(described_class)
       expect( seg.name ).to     eq( "foo" )
       expect( seg      ).to_not be_empty
     end
 
     it "returns an instance with name='foo' when given '   foo ' (a string with leading/trailing whitespace)" do
-      seg = described_class.new("   foo ")
+      seg = described_class.reify("   foo ")
       expect( seg      ).to be_a(described_class)
       expect( seg.name ).to eq( "foo" )
       expect( seg      ).to_not be_empty
     end
 
     it "returns an instance with name='foo' when given :foo (a symbol)" do
-      seg = described_class.new(:foo)
+      seg = described_class.reify(:foo)
       expect( seg      ).to     be_a(described_class)
       expect( seg.name ).to     eq( "foo" )
       expect( seg      ).to_not be_empty
     end
 
     it "returns an instance with name='42' when given 42 (an integer)" do
-      seg = described_class.new(42)
+      seg = described_class.reify(42)
       expect( seg      ).to     be_a(described_class)
       expect( seg.name ).to     eq( "42" )
       expect( seg      ).to_not be_empty
@@ -60,10 +60,12 @@ RSpec.describe CheckPlease::PathSegment do
     subject { described_class.new() }
 
     has_these_basic_properties(
-      :empty?    => true,
-      :name      => "",
-      :key       => nil,
-      :key_value => nil,
+      :empty?        => true,
+      :name          => "",
+      :key           => nil,
+      :key_value     => nil,
+      :key_expr?     => false,
+      :key_val_expr? => false,
     )
 
     match_eh_returns(
@@ -80,10 +82,12 @@ RSpec.describe CheckPlease::PathSegment do
     subject { described_class.new('foo') }
 
     has_these_basic_properties(
-      :empty?    => false,
-      :name      => "foo",
-      :key       => nil,
-      :key_value => nil,
+      :empty?        => false,
+      :name          => "foo",
+      :key           => nil,
+      :key_value     => nil,
+      :key_expr?     => false,
+      :key_val_expr? => false,
     )
 
     match_eh_returns(
@@ -100,10 +104,12 @@ RSpec.describe CheckPlease::PathSegment do
     subject { described_class.new(':foo') }
 
     has_these_basic_properties(
-      :empty?    => false,
-      :name      => ":foo",
-      :key       => "foo",
-      :key_value => nil,
+      :empty?        => false,
+      :name          => ":foo",
+      :key           => "foo",
+      :key_value     => nil,
+      :key_expr?     => true,
+      :key_val_expr? => false,
     )
 
     match_eh_returns(
@@ -120,10 +126,12 @@ RSpec.describe CheckPlease::PathSegment do
     subject { described_class.new('foo=42') }
 
     has_these_basic_properties(
-      :empty?    => false,
-      :name      => "foo=42",
-      :key       => "foo",
-      :key_value => "42",
+      :empty?        => false,
+      :name          => "foo=42",
+      :key           => "foo",
+      :key_value     => "42",
+      :key_expr?     => false,
+      :key_val_expr? => true,
     )
 
     match_eh_returns(
