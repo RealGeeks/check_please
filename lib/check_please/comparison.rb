@@ -43,10 +43,8 @@ module CheckPlease
 
       def compare_arrays(ref_array, can_array, path)
         if ( key = path.key_for_compare(flags) )
-puts "comparing by :#{key} at #{path}" if $debug
           compare_arrays_by_key ref_array, can_array, path, key
         else
-puts "comparing by index at #{path}" if $debug
           compare_arrays_by_index ref_array, can_array, path
         end
       end
