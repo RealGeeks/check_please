@@ -150,5 +150,16 @@ RSpec.describe CheckPlease::Flags do
       flags.match_by_key = "/foo/:id"
       expect( flags.match_by_key ).to eq( [ "/foo/:id" ] )
     end
+
+    spec_body = ->(_example) {
+      flags = flagify()
+      flags.match_by_key = "/foo/:id"
+      expect( flags.match_by_key ).to eq( [ "/foo/:id" ] )
+      flags.match_by_key = "/bar/:id"
+      expect( flags.match_by_key ).to eq( [ "/foo/:id", "/bar/:id" ] )
+    }
+
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
+    specify "the list doesn't persist between instances", &spec_body
   end
 end
