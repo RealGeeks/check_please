@@ -25,26 +25,17 @@ module CheckPlease
 
       def reify(primitive_or_object)
         case primitive_or_object
-        when self
-          primitive_or_object
-        when Array
-          primitive_or_object.map { |e| reify(e) }
-        when *reifiable
-          new(primitive_or_object)
-        else
-          acceptable = reifiable.map { |e|
-            begin
-              e.name
-            rescue NoMethodError
-              e.inspect
-            end
-          }
-
-          raise ArgumentError, <<~EOF
-            #{self}.reify was given: #{primitive_or_object.inspect}
-            but only accepts: #{acceptable.join(", ")}
-          EOF
+        when self       ; return primitive_or_object
+        when Array      ; return primitive_or_object.map { |e| reify(e) }
+        when *reifiable ; return new(primitive_or_object)
         end
+
+        # that didn't work? complain!
+        acceptable = reifiable.map { |e| Class === e ? e.name : e.inspect }
+        raise ArgumentError, <<~EOF
+          #{self}.reify was given: #{primitive_or_object.inspect}
+          but only accepts: #{acceptable.join(", ")}
+        EOF
       end
     end
 
