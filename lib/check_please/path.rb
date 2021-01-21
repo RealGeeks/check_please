@@ -2,7 +2,7 @@ module CheckPlease
 
   # TODO: this class is getting a bit large; maybe split out some of the stuff that uses flags?
   class Path
-    extend CheckPlease::Reification
+    include CheckPlease::Reification
     can_reify String, Symbol, Numeric, nil
 
     SEPARATOR = "/"
@@ -97,7 +97,7 @@ module CheckPlease
     def match?(path_or_string)
       return true if self == path_or_string
 
-      other = self.class.new(path_or_string)
+      other = reify(path_or_string)
       return false unless other.segments.length == self.segments.length
       seg_pairs = self.segments.zip(other.segments)
       seg_pairs.all? { |a, b| a.match?(b) }

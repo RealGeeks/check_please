@@ -1,7 +1,7 @@
 module CheckPlease
 
   class PathSegment
-    extend CheckPlease::Reification
+    include CheckPlease::Reification
     can_reify String, Symbol, Numeric, nil
 
     KEY_EXPR = %r{
