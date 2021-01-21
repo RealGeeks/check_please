@@ -1,6 +1,9 @@
 module CheckPlease
 
   class PathSegment
+    extend CheckPlease::Reification
+    can_reify String, Symbol, Numeric, nil
+
     KEY_EXPR = %r{
       ^
       \:       # a literal colon
@@ -21,17 +24,6 @@ module CheckPlease
       )       # end capture key value
       $
     }x
-
-    def self.reify(name_or_instance = nil)
-      case name_or_instance
-      when self
-        name_or_instance
-      when String, Symbol, Numeric, nil
-        new(name_or_instance)
-      else
-        raise ArgumentError, "#{name_or_instance.inspect} ?"
-      end
-    end
 
     attr_reader :name, :key, :key_value
     alias_method :to_s, :name

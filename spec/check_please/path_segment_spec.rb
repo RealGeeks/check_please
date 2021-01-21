@@ -20,39 +20,49 @@ RSpec.describe CheckPlease::PathSegment do
         raise_error( CheckPlease::InvalidPathSegment )
     end
 
-    it "returns an empty instance with name='' when given no arguments" do
-      seg = described_class.reify()
-      expect( seg      ).to be_a(described_class)
-      expect( seg.name ).to eq( "" )
-      expect( seg      ).to be_empty
-    end
-
     it "returns an instance with name='foo' when given 'foo' (a string)" do
-      seg = described_class.reify("foo")
-      expect( seg      ).to     be_a(described_class)
-      expect( seg.name ).to     eq( "foo" )
-      expect( seg      ).to_not be_empty
+      instance = described_class.reify("foo")
+      expect( instance      ).to     be_a(described_class)
+      expect( instance.name ).to     eq( "foo" )
+      expect( instance      ).to_not be_empty
     end
 
     it "returns an instance with name='foo' when given '   foo ' (a string with leading/trailing whitespace)" do
-      seg = described_class.reify("   foo ")
-      expect( seg      ).to be_a(described_class)
-      expect( seg.name ).to eq( "foo" )
-      expect( seg      ).to_not be_empty
+      instance = described_class.reify("   foo ")
+      expect( instance      ).to be_a(described_class)
+      expect( instance.name ).to eq( "foo" )
+      expect( instance      ).to_not be_empty
     end
 
     it "returns an instance with name='foo' when given :foo (a symbol)" do
-      seg = described_class.reify(:foo)
-      expect( seg      ).to     be_a(described_class)
-      expect( seg.name ).to     eq( "foo" )
-      expect( seg      ).to_not be_empty
+      instance = described_class.reify(:foo)
+      expect( instance      ).to     be_a(described_class)
+      expect( instance.name ).to     eq( "foo" )
+      expect( instance      ).to_not be_empty
     end
 
     it "returns an instance with name='42' when given 42 (an integer)" do
-      seg = described_class.reify(42)
-      expect( seg      ).to     be_a(described_class)
-      expect( seg.name ).to     eq( "42" )
-      expect( seg      ).to_not be_empty
+      instance = described_class.reify(42)
+      expect( instance      ).to     be_a(described_class)
+      expect( instance.name ).to     eq( "42" )
+      expect( instance      ).to_not be_empty
+    end
+
+    it "raises when given a boolean" do
+      expect { described_class.reify(true) }.to \
+        raise_error(ArgumentError, /reify was given: true.*but only accepts/m)
+    end
+
+    it "returns a list of instances when given [ 'foo', 'bar' ]" do
+      list = described_class.reify( %w[ foo bar ] )
+      expect( list ).to be_an(Array)
+      expect( list.length ).to eq( 2 )
+
+      foo, bar = *list
+      expect( foo      ).to be_a(described_class)
+      expect( bar      ).to be_a(described_class)
+      expect( foo.name ).to eq( "foo" )
+      expect( bar.name ).to eq( "bar" )
     end
   end
 

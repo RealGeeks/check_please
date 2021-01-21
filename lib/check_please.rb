@@ -7,6 +7,7 @@ require "check_please/error"
 require "check_please/version"
 
 module CheckPlease
+  autoload :Reification, "check_please/reification"
   autoload :CLI,         "check_please/cli"
   autoload :Comparison,  "check_please/comparison"
   autoload :Diff,        "check_please/diff"

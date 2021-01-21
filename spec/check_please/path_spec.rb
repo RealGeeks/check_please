@@ -182,6 +182,60 @@ RSpec.describe CheckPlease::Path do
     end
   end
 
+  describe ".reify" do
+    it "returns the instance when given an instance of itself" do
+      foo = described_class.reify("foo")
+      returned = described_class.reify(foo)
+      expect( returned ).to be( foo ) # object identity check
+    end
+
+    it "raises CheckPlease::PathSegment::InvalidPath when given a string containing a space between non-space characters " do
+      expect { described_class.reify("hey bob") }.to \
+        raise_error( CheckPlease::InvalidPath )
+    end
+
+    it "returns an instance with to_s='/foo' when given 'foo' (a string)" do
+      instance = described_class.reify("foo")
+      expect( instance      ).to be_a(described_class)
+      expect( instance.to_s ).to eq( "/foo" )
+    end
+
+    it "returns an instance with to_s='/foo' when given '   foo ' (a string with leading/trailing whitespace)" do
+      instance = described_class.reify("   foo ")
+      expect( instance      ).to be_a(described_class)
+      expect( instance.to_s ).to eq( "/foo" )
+    end
+
+    it "returns an instance with to_s='/foo' when given :foo (a symbol)" do
+      instance = described_class.reify(:foo)
+      expect( instance      ).to be_a(described_class)
+      expect( instance.to_s ).to eq( "/foo" )
+    end
+
+    it "returns an instance with to_s='/42' when given 42 (an integer)" do
+      instance = described_class.reify(42)
+      expect( instance      ).to be_a(described_class)
+      expect( instance.to_s ).to eq( "/42" )
+    end
+
+    it "raises when given a boolean" do
+      expect { described_class.reify(true) }.to \
+        raise_error(ArgumentError, /reify was given: true.*but only accepts/m)
+    end
+
+    it "returns a list of instances when given [ 'foo', 'bar' ]" do
+      list = described_class.reify( %w[ foo bar ] )
+      expect( list ).to be_an(Array)
+      expect( list.length ).to eq( 2 )
+
+      foo, bar = *list
+      expect( foo      ).to be_a(described_class)
+      expect( bar      ).to be_a(described_class)
+      expect( foo.to_s ).to eq( "/foo" )
+      expect( bar.to_s ).to eq( "/bar" )
+    end
+  end
+
   describe "#parent" do
     specify "the parent of '/foo/bar' is 'foo'" do
       foobar = pathify('/foo/bar')

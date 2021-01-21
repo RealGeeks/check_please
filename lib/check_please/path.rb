@@ -2,6 +2,9 @@ module CheckPlease
 
   # TODO: this class is getting a bit large; maybe split out some of the stuff that uses flags?
   class Path
+    extend CheckPlease::Reification
+    can_reify String, Symbol, Numeric, nil
+
     SEPARATOR = "/"
 
     def self.root

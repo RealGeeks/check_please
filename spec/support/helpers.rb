@@ -30,7 +30,7 @@ def has_these_basic_properties(messages_and_expected_returns = {})
 end
 
 def pathify(name)
-  CheckPlease::Path.new(name)
+  CheckPlease::Path.reify(name)
 end
 
 def flagify(attrs = {})
