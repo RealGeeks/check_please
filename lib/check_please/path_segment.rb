@@ -1,10 +1,6 @@
 module CheckPlease
 
   class PathSegment
-    class IllegalName < ArgumentError
-      include CheckPlease::Error
-    end
-
     KEY_EXPR = %r{
       ^
       \:       # a literal colon
@@ -33,7 +29,7 @@ module CheckPlease
       when String, Symbol, Numeric, nil
         new(name_or_instance)
       else
-        raise IllegalName, "wtf is a #{name_or_instance.inspect} ?"
+        raise ArgumentError, "#{name_or_instance.inspect} ?"
       end
     end
 
@@ -42,10 +38,13 @@ module CheckPlease
 
     def initialize(name = nil)
       @name = name.to_s.strip
-      complain_about_invalid_name!(name) if @name =~ %r(\s)
+      if @name =~ %r(\s) # has any whitespace
+        raise InvalidPathSegment, <<~EOF
+          #{name.inspect} is not a valid #{self.class} name
+        EOF
+      end
       parse_key_and_value
       freeze
-      validate!
     end
 
     def empty?
@@ -95,16 +94,6 @@ module CheckPlease
         # :nothingtodohere:
       end
     end
-
-    def validate!
-      # subclass may override
-    end
-
-    def complain_about_invalid_name!(original_name)
-      msg = "#{name.inspect} is not a valid #{self.class} name! (given #{original_name.inspect})"
-      raise IllegalName, msg
-    end
-
   end
 
 end

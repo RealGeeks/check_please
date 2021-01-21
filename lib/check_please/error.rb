@@ -6,7 +6,27 @@ module CheckPlease
     # instead....
   end
 
+  class DuplicateKeyError < ::IndexError
+    include CheckPlease::Error
+  end
+
   class InvalidFlag < ArgumentError
+    include CheckPlease::Error
+  end
+
+  class InvalidPath < ArgumentError
+    include CheckPlease::Error
+  end
+
+  class InvalidPathSegment < ArgumentError
+    include CheckPlease::Error
+  end
+
+  class NoSuchKeyError < ::KeyError
+    include CheckPlease::Error
+  end
+
+  class TypeMismatchError < ::TypeError
     include CheckPlease::Error
   end
 

@@ -15,9 +15,9 @@ RSpec.describe CheckPlease::PathSegment do
       expect( returned ).to be( foo ) # object identity check
     end
 
-    it "raises CheckPlease::PathSegment::IllegalName when given a string containing a space between non-space characters " do
+    it "raises CheckPlease::PathSegment::InvalidPathSegment when given a string containing a space between non-space characters " do
       expect { described_class.reify("hey bob") }.to \
-        raise_error( CheckPlease::PathSegment::IllegalName )
+        raise_error( CheckPlease::InvalidPathSegment )
     end
 
     it "returns an empty instance with name='' when given no arguments" do

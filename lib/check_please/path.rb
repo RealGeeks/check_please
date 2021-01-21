@@ -1,13 +1,5 @@
 module CheckPlease
 
-  autoload :InvalidPathSegment, "check_please/path_segment"
-
-  class InvalidPath < ArgumentError
-    include CheckPlease::Error
-  end
-
-
-
   # TODO: this class is getting a bit large; maybe split out some of the stuff that uses flags?
   class Path
     SEPARATOR = "/"
@@ -39,7 +31,7 @@ module CheckPlease
 
       @to_s = SEPARATOR + @segments.join(SEPARATOR)
       freeze
-    rescue PathSegment::IllegalName => e
+    rescue InvalidPathSegment => e
       raise InvalidPath, e.message
     end
 

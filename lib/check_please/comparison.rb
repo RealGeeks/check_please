@@ -1,18 +1,6 @@
 module CheckPlease
   using Refinements
 
-  class DuplicateKeyError < ::IndexError
-    include CheckPlease::Error
-  end
-
-  class TypeMismatchError < ::TypeError
-    include CheckPlease::Error
-  end
-
-  class NoSuchKeyError < ::KeyError
-    include CheckPlease::Error
-  end
-
   class Comparison
     def self.perform(reference, candidate, flags = {})
       new.perform(reference, candidate, flags)
