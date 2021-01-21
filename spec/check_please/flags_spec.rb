@@ -107,12 +107,12 @@ RSpec.describe CheckPlease::Flags do
     spec_body = ->(_example) {
       flags = flagify()
       flags.select_paths = "/foo"
-      expect( flags.select_paths ).to eq( [ "/foo" ] )
+      expect( flags.select_paths ).to eq( pathify([ "/foo" ]) )
       flags.select_paths = "/bar"
-      expect( flags.select_paths ).to eq( [ "/foo", "/bar" ] )
+      expect( flags.select_paths ).to eq( pathify([ "/foo", "/bar" ]) )
     }
 
-    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
 
@@ -125,12 +125,12 @@ RSpec.describe CheckPlease::Flags do
     spec_body = ->(_example) {
       flags = flagify()
       flags.reject_paths = "/foo"
-      expect( flags.reject_paths ).to eq( [ "/foo" ] )
+      expect( flags.reject_paths ).to eq( pathify([ "/foo" ]) )
       flags.reject_paths = "/bar"
-      expect( flags.reject_paths ).to eq( [ "/foo", "/bar" ] )
+      expect( flags.reject_paths ).to eq( pathify([ "/foo", "/bar" ]) )
     }
 
-    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
 
