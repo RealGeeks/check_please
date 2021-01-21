@@ -17,15 +17,15 @@ module CheckPlease
     def initialize(name_or_segments = [])
       case name_or_segments
       when String, Symbol, Numeric, nil
-        maybe_segments = name_or_segments.to_s.split(SEPARATOR)
-        maybe_segments.shift until maybe_segments.empty? || maybe_segments.first =~ /\S/
+        names = name_or_segments.to_s.split(SEPARATOR)
+        names.shift until names.empty? || names.first =~ /\S/
+        segments = PathSegment.reify(names)
       when Array
-        maybe_segments = name_or_segments
+        segments = PathSegment.reify(name_or_segments)
       else
         raise InvalidPath, "not sure what to do with #{name_or_segments.inspect}"
       end
 
-      segments = Array(maybe_segments).map { |e| PathSegment.reify(e) }
       if segments.any?(&:empty?)
         raise InvalidPath, "#{self.class.name} cannot contain empty segments"
       end
@@ -83,10 +83,12 @@ module CheckPlease
 
 		# TODO: Naming Things
     def key_for_compare(flags)
-      kexps = unpack_key_exprs(flags)
-      matches = kexps \
-        .select { |e| e.parent.match?(self.to_s) }
-        .uniq(&:to_s) # have to use #to_s or implement #hash and #eql? in horrible ways
+      mbk_exprs = unpack_mbk_exprs(flags)
+      matches = mbk_exprs.select { |mbk_expr|
+        # NOTE: matching on parent because path '/foo/:id' should return 'id' for path '/foo'
+        mbk_expr.parent.match?(self)
+      }
+
       case matches.length
       when 0 ; nil
       when 1 ; matches.first.segments.last.key
@@ -136,6 +138,15 @@ module CheckPlease
       true
     end
 
+    # A path of "/foo/:id/bar/:name" has two key expressions:
+    # - "/foo/:id"
+    # - "/foo/:id/bar/:name"
+    def key_exprs
+      ( [self] + ancestors )
+        .reject { |path| path.root? }
+        .select { |path| path.segments.last&.key_expr? }
+    end
+
     # O(n) check to see if the path itself is on a list
     def self_on_list?(paths)
       paths.any? { |path| self == path }
@@ -146,22 +157,11 @@ module CheckPlease
       depth > flags.max_depth
     end
 
-    def unpack_key_exprs(flags)
-      list = flags.match_by_key.map { |e| self.class.new(e) }
-
-      # The list might have a compound key expression like "/foo/:id/bar/:name".
-      # If so, unpack it into [ "/foo/:id", "/foo/:id/bar/:name" ]
-      list += list.map { |key_expr|
-        key_expr.ancestors.map { |ancestor| # nested lists
-          ancestor if ancestor.segments.last&.key_expr? # nils
-        }
-      }
-
-      list \
-        .flatten         # get rid of nested lists
-        .compact         # get rid of nils
-        .uniq            # get rid of duplicates
-        .sort_by(&:to_s) # this is just gratuitous :)
+    def unpack_mbk_exprs(flags)
+      flags.match_by_key
+        .map { |path| path.send(:key_exprs) }
+        .flatten
+        .uniq { |e| e.to_s } # use the block form so we don't have to implement #hash and #eql? in horrible ways
     end
 
   end

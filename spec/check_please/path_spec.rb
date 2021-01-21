@@ -122,6 +122,26 @@ RSpec.describe CheckPlease::Path do
         :root? => false,
       )
     end
+
+    describe "'/:id' (a string representing a key expression)" do
+      subject { described_class.new('/:id') }
+
+      has_these_basic_properties(
+        :to_s  => "/:id",
+        :depth => 2,
+        :root? => false,
+      )
+    end
+
+    describe "'/foo/:id/bar/:name' (a string representing two key expressions)" do
+      subject { described_class.new('/foo/:id/bar/:name') }
+
+      has_these_basic_properties(
+        :to_s  => "/foo/:id/bar/:name",
+        :depth => 5,
+        :root? => false,
+      )
+    end
   end
 
   describe "#==" do

@@ -58,6 +58,16 @@ RSpec.describe "bin/check_please executable", :cli do
     end
   end
 
+  context "for a ref/can pair with two simple objects in reverse order" do
+    let(:ref_file) { "spec/fixtures/match-by-key-reference.json" }
+    let(:can_file) { "spec/fixtures/match-by-key-candidate.json" }
+
+    specify "--match-by-key works end to end" do
+      output = run_cli(ref_file, can_file, "--match-by-key", "/:id")
+      expect( output ).to be_empty
+    end
+  end
+
   TIME_OUT_CLI_AFTER = 1 # seconds
   def run_cli(*args, pipe: nil)
     args.flatten!

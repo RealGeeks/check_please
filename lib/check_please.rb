@@ -133,6 +133,7 @@ module CheckPlease
 
   Flags.define :match_by_key do |flag|
     flag.reentrant
+    flag.coerce { |value| CheckPlease::Path.reify(value) }
 
     flag.cli_long = "--match-by-key FOO"
     flag.description = [

@@ -161,6 +161,18 @@ RSpec.describe CheckPlease::Comparison do
 
   describe "comparing arrays by keys" do
     shared_examples "compare_arrays_by_key" do
+      specify "comparing [A,B] with [B,A] with no match_by_key expressions complains a lot" do
+        ref = [ a, b ]
+        can = [ b, a ]
+        diffs = invoke!( ref, can, match_by_key: [] ) # note empty list
+        expect( diffs.length ).to eq( 4 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1/id",  ref: a["id"],  can: b["id"] )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/1/foo", ref: a["foo"], can: b["foo"] )
+        expect( diffs[2] ).to eq_diff( :mismatch, "/2/id",  ref: b["id"],  can: a["id"] )
+        expect( diffs[3] ).to eq_diff( :mismatch, "/2/foo", ref: b["foo"], can: a["foo"] )
+        #                                                        ^              ^
+      end
+
       specify "comparing [A,B] with [B,A] correctly matches up A and B using the :id value, resulting in zero diffs" do
         ref = [ a, b ]
         can = [ b, a ]
@@ -209,15 +221,12 @@ RSpec.describe CheckPlease::Comparison do
         expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
       end
 
-      xspecify "comparing two lists where the top-level elements can be matched by key but have different child values... works (implicit key for top level)" do
+      specify "comparing two lists where the top-level elements can be matched by key but have different child values... works (implicit key for top level)" do
         ref = [ { "id" => 1, "deeply" => { "nested" => [ a, b ] } } ]
         can = [ { "id" => 1, "deeply" => { "nested" => [ c, a ] } } ]
 
-$debug = true
-puts
         diffs = invoke!( ref, can, match_by_key: [         "/:id/deeply/nested/:id" ] )
         #                                          ^^^^^^^ no "/:id" here
-puts "", diffs
         expect( diffs.length ).to eq( 1 )
         expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
       end
