@@ -29,3 +29,10 @@ def has_these_basic_properties(messages_and_expected_returns = {})
   end
 end
 
+def pathify(name)
+  CheckPlease::Path.new(name)
+end
+
+def flagify(attrs = {})
+  CheckPlease::Flags.new(attrs)
+end

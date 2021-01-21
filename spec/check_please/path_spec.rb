@@ -1,15 +1,4 @@
 RSpec.describe CheckPlease::Path do
-  def pathify(name)
-    described_class.new(name)
-  end
-  def self.pathify(name)
-    described_class.new(name)
-  end
-
-  def flagify(attrs = {})
-    CheckPlease::Flags.new(attrs)
-  end
-
   specify ".root returns a root path" do
     root = described_class.root
     expect( root       ).to be_a( described_class )
@@ -423,5 +412,4 @@ RSpec.describe CheckPlease::Path do
       it_returns nil,    for_path: '/foo/name=42/bar/id=23'
     end
   end
-
 end
