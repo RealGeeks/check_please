@@ -147,8 +147,8 @@ RSpec.describe CheckPlease::Flags do
 
     it "contains path/key expression" do
       flags = flagify()
-      flags.match_by_key = "/foo[id,name]"
-      expect( flags.match_by_key ).to eq( [ "/foo[id,name]" ] )
+      flags.match_by_key = "/foo/:id"
+      expect( flags.match_by_key ).to eq( [ "/foo/:id" ] )
     end
   end
 end
