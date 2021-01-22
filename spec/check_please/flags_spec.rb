@@ -55,9 +55,13 @@ RSpec.describe CheckPlease::Flags do
     end
 
     def self.it_coerces(value, to:)
+      expected_value = to
       it "coerces #{value.inspect} to #{to.inspect}" do
         flags = flagify( fail_fast: value )
-        expect( flags.fail_fast ).to be to
+
+        actual = flags.fail_fast # <-- where the magic happens
+
+        expect( actual ).to be( expected_value )
       end
     end
 

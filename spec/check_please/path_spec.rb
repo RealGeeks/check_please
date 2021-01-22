@@ -68,8 +68,7 @@ RSpec.describe CheckPlease::Path do
       )
 
       specify "its .parent is a Path with name='/foo'" do
-        expect( subject.parent      ).to be_a( described_class )
-        expect( subject.parent.to_s ).to eq( '/foo' )
+        expect( subject.parent ).to eq( pathify('/foo') )
       end
     end
 
@@ -150,7 +149,9 @@ RSpec.describe CheckPlease::Path do
         ? "path '%s'" % when_given.to_s \
         : when_given.inspect
       specify "returns #{expected.inspect} when given #{desc}" do
-        actual = (subject == when_given)
+
+        actual = (subject == when_given) # <-- where the magic happens
+
         _compare expected, actual
       end
     end
@@ -277,8 +278,8 @@ RSpec.describe CheckPlease::Path do
   end
 
   describe "#ancestors" do
-    specify "the ancestors of '/foo/bar' are root and '/foo'" do
-      expect( pathify('/foo/bar').ancestors.map(&:to_s) ).to eq( [ "/", "/foo" ])
+    specify "the ancestors of '/foo/bar' are root and '/foo' (ancestors are listed bottom-up)" do
+      expect( pathify('/foo/bar').ancestors.map(&:to_s) ).to eq( [ "/foo", "/"] )
     end
 
     specify "the ancestors of '/foo' are (just) root" do
@@ -342,7 +343,9 @@ RSpec.describe CheckPlease::Path do
     def self.it_returns(expected, when_given:)
       line = caller[0].split(":")[1]
       specify "[line #{line}] returns #{expected} when given #{when_given.inspect}" do
-        actual = subject.match?(when_given)
+
+        actual = subject.match?(when_given) # <-- where the magic happens
+
         _compare expected, actual
       end
     end
@@ -384,7 +387,7 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo"
       it_returns false, when_given: "/bar"
       it_returns false, when_given: "/foo/bar"
-      # it_returns true,  when_given: "/foo/:id"
+      it_returns false, when_given: "/foo/:id"               # key/val expr in subject matches *first* key expr in argument, but incomplete path
       it_returns false, when_given: "/foo/id=23"
       it_returns false, when_given: "/foo/id=42"
       it_returns false, when_given: "/foo/id=42/bar"
@@ -408,7 +411,7 @@ RSpec.describe CheckPlease::Path do
       it_returns false, when_given: "/foo/id=42/bar/id=23"
       it_returns true,  when_given: "/foo/name=42/bar/id=23" # literal string equality
       it_returns false, when_given: "/foo/:id/bar/:id"       # first key expr in subject does not match
-      # it_returns true,  when_given: "/foo/:name"             # first key/val expr in subject matches first key expr in argument
+      it_returns false,  when_given: "/foo/:name"            # first key/val expr in subject matches first key expr in argument, but incomplete path
       it_returns true,  when_given: "/foo/:name/bar/:id"     # both key/val exprs in subject match key exprs in argument
     end
   end
@@ -418,7 +421,9 @@ RSpec.describe CheckPlease::Path do
       line = caller[0].split(":")[1]
       specify "[line #{line}] returns #{expected.inspect} for path '#{for_path}'" do
         the_path = pathify(for_path)
-        actual = the_path.key_for_compare(flags)
+
+        actual = the_path.key_for_compare(flags) # <-- where the magic happens
+
         _compare expected, actual
       end
     end

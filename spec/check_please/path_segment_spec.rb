@@ -2,7 +2,9 @@ RSpec.describe CheckPlease::PathSegment do
   def self.match_eh_returns(values_and_expected_returns = {})
     values_and_expected_returns.each do |value, expected|
       specify "#match?(#{value.inspect}) returns #{expected.inspect}" do
-        actual = subject.match?(value)
+
+        actual = subject.match?(value) # <-- where the magic happens
+
         _compare expected, actual
       end
     end
@@ -110,7 +112,7 @@ RSpec.describe CheckPlease::PathSegment do
     )
   end
 
-  describe "created with ':foo'" do
+  describe "created with ':foo' (a 'key expression')" do
     subject { described_class.new(':foo') }
 
     has_these_basic_properties(
@@ -126,13 +128,13 @@ RSpec.describe CheckPlease::PathSegment do
       ""       => false,
       "foo"    => false,
       "bar"    => false,
-      ":foo"   => false,
-      "foo=23" => true, # segment is a key expr that matches the given key/value
-      "foo=42" => true, # segment is a key expr that matches the given key/value
+      ":foo"   => false, # key exprs can't match other key exprs
+      "foo=23" => true,  # segment is a key expr that matches the given key/value
+      "foo=42" => true,  # segment is a key expr that matches the given key/value
     )
   end
 
-  describe "created with 'foo=42'" do
+  describe "created with 'foo=42' (a 'key/value expression')" do
     subject { described_class.new('foo=42') }
 
     has_these_basic_properties(
@@ -148,9 +150,9 @@ RSpec.describe CheckPlease::PathSegment do
       ""       => false,
       "foo"    => false,
       "bar"    => false,
-      ":foo"   => true, # segment is a key/value that matches the given key expr
-      "foo=23" => false,
-      "foo=42" => false,
+      ":foo"   => true,  # segment is a key/value that matches the given key expr
+      "foo=23" => false, # key/val exprs can't match other key/val exprs
+      "foo=42" => false, # key/val exprs can't match other key/val exprs
     )
   end
 end

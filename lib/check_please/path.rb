@@ -56,7 +56,7 @@ module CheckPlease
         p = p.parent
         list.unshift p
       end
-      list
+      list.reverse
     end
 
     def basename
@@ -85,7 +85,7 @@ module CheckPlease
     def key_for_compare(flags)
       mbk_exprs = unpack_mbk_exprs(flags)
       matches = mbk_exprs.select { |mbk_expr|
-        # NOTE: matching on parent because path '/foo/:id' should return 'id' for path '/foo'
+        # NOTE: matching on parent because MBK '/foo/:id' should return 'id' for path '/foo'
         mbk_expr.parent.match?(self)
       }
 
@@ -97,10 +97,13 @@ module CheckPlease
     end
 
     def match?(path_or_string)
+      # If the strings are literally equal, we're good..
       return true if self == path_or_string
 
+      # Otherwise, compare segments: do we have the same number, and do they all #match?
       other = reify(path_or_string)
-      return false unless other.segments.length == self.segments.length
+      return false if other.depth != self.depth
+
       seg_pairs = self.segments.zip(other.segments)
       seg_pairs.all? { |a, b| a.match?(b) }
     end

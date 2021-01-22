@@ -29,6 +29,7 @@ module CheckPlease
         when Array      ; return primitive_or_object.map { |e| reify(e) }
         when *reifiable ; return new(primitive_or_object)
         end
+        # note early return ^^^
 
         # that didn't work? complain!
         acceptable = reifiable.map { |e| Class === e ? e.name : e.inspect }
