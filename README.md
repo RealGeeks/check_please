@@ -136,11 +136,12 @@ CheckPlease defines:
   and it stops when it encounters a type mismatch in order to avoid producing a
   lot of "garbage" diff output.)_
 * **mismatch** means that both the **reference** and the **candidate** had a
-  value at the given path, and neither value was an Array or a Hash.
+  value at the given path, and neither value was an Array or a Hash, and the
+  two values were not equal.
 * **extra** means that, inside an Array or a Hash, the **candidate** contained
-  values that were not found in the **reference**.
+  elements that were not found in the **reference**.
 * **missing** is the opposite of **extra**:  inside an Array or a Hash, the
-  **reference** contained values that were not found in the **candidate**.
+  **reference** contained elements that were not found in the **candidate**.
 
 #### Paths
 
