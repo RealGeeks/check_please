@@ -35,6 +35,11 @@ but be aware that CheckPlease uses a few words in a jargony way:
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
 
+Also, even though this gem was born from a need to compare JSON documents, I'll
+be talking about "hashes" instead of "objects", because I assume this will
+mostly be used by Ruby developers.  Feel free to substitute "object" wherever
+you see "hash" if that's easier for you.  :)
+
 ## Usage
 
 ### From the Terminal / Command Line Interface (CLI)
@@ -261,29 +266,36 @@ Ruby's `OptionParser` leads to some less than obvious behavior.  Search
 
 ##### `match_by_key`
 
-Okay.  This gets... a bit weird, and as of this writing it's still a bit experimental.
+**I know this looks like a LOT of information, but it's really not that bad.  I
+just need some very specific examples, and talking about this stuff in English
+(rather than code) is hard.  Take a moment for some deep breaths if you need
+it.  :)**
 
-For all the details on exactly how this behaves, go look in
-`./spec/check_please/comparison_spec.rb` and check out the `describe` block
-labeled `"comparing arrays by keys"`.
+If you're comfortable reading RSpec and/or want to check out all the edge
+cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
+`describe` block labeled `"comparing arrays by keys"`.
 
-The short version, though, is that this allows you to match up two lists of
-hashes using the value of a single key that is treated as the identifier for
-that hash.
+The short version is that this allows you to match up arrays of hashes using
+the value of a single key that is treated as the identifier for each hash.
 
 There's a lot going on in that sentence, so let's unpack it a bit.
 
-Imagine that you're comparing two documents that actually contain the same
-data, but in a different order.  To use a very simple example, let's say that
-both documents consist of a single array of two simple hashes, which we'll call
-"A" and "B":
+Imagine you're comparing two API endpoints that actually return the same data,
+but in different orders.  To use a contrived example, let's say that both
+documents consist of a single array of two simple hashes, but the reference
+array and the candidate array are reversed:
 
-* "A" looks like this:  `{ "id" => 1, "foo" => "bar" }`
-* "B" looks like this:  `{ "id" => 2, "foo" => "spam" }`
+```ruby
+# REFERENCE
+[ { "id" => 1, "foo" => "bar" },  { "id" => 2, "foo" => "spam" } ]
 
-Normally, if your reference document is the list [A, B] and your candidate
-document is the list [B, A], CheckPlease will compare A and B by their position
-in the array, and you'll get a diff report that looks like this:
+# CANDIDATE
+[ { "id" => 2, "foo" => "spam" }, { "id" => 1, "foo" => "bar" }  ]
+```
+
+By default, CheckPlease will match up array elements by their position in the
+array, so this will compare the hash with id=1 against the hash with id=2 and
+generate a diff report like this:
 
 ```
 TYPE     | PATH   | REFERENCE | CANDIDATE
