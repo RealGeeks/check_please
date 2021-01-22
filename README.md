@@ -5,6 +5,31 @@ structures parsed from either of those.
 
 <!-- start of auto-generated TOC; see https://github.com/ekalinin/github-markdown-toc -->
 <!--ts-->
+   * [check_please](#check_please)
+      * [Installation](#installation)
+      * [Terminology](#terminology)
+      * [Usage](#usage)
+         * [From the Terminal / Command Line Interface (CLI)](#from-the-terminal--command-line-interface-cli)
+         * [From RSpec](#from-rspec)
+         * [From Ruby](#from-ruby)
+         * [Understanding the Output](#understanding-the-output)
+            * [Diff Types](#diff-types)
+            * [Paths](#paths)
+            * [Output Formats](#output-formats)
+         * [Flags](#flags)
+            * [Setting Flags in the CLI](#setting-flags-in-the-cli)
+            * [Setting Flags in Ruby](#setting-flags-in-ruby)
+            * ["Reentrant" Flags](#reentrant-flags)
+            * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
+               * [match_by_key](#match_by_key)
+      * [TODO (maybe)](#todo-maybe)
+      * [Development](#development)
+      * [Contributing](#contributing)
+      * [License](#license)
+      * [Code of Conduct](#code-of-conduct)
+
+<!-- Added by: sam, at: Fri Jan 22 12:08:57 PST 2021 -->
+
 <!--te-->
 <!-- end of auto-generated TOC -->
 
