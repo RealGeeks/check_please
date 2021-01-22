@@ -3,6 +3,11 @@
 Check for differences between two JSON documents, YAML documents, or Ruby data
 structures parsed from either of those.
 
+<!-- start of auto-generated TOC; see https://github.com/ekalinin/github-markdown-toc -->
+<!--ts-->
+<!--te-->
+<!-- end of auto-generated TOC -->
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -264,16 +269,16 @@ Ruby's `OptionParser` leads to some less than obvious behavior.  Search
 
 #### Expanded Documentation for Specific Flags
 
-##### `match_by_key`
+##### match_by_key
 
-**I know this looks like a LOT of information, but it's really not that bad.  I
+_**I know this looks like a LOT of information, but it's really not that bad.  I
 just need some very specific examples, and talking about this stuff in English
 (rather than code) is hard.  Take a moment for some deep breaths if you need
-it.  :)**
+it.  :)**_
 
-If you're comfortable reading RSpec and/or want to check out all the edge
+_If you're comfortable reading RSpec and/or want to check out all the edge
 cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
-`describe` block labeled `"comparing arrays by keys"`.
+`describe` block labeled `"comparing arrays by keys"`._
 
 The short version is that this allows you to match up arrays of hashes using
 the value of a single key that is treated as the identifier for each hash.
@@ -321,17 +326,47 @@ Please note that the CLI and Ruby implementations of these are a bit different
 
 Here are some examples of how that looks on the command line:
 
-* `--match-by-key /:id` -- using the A and B documents above, this will expect
-  the top-level element to be an array that contains only hashes, and use the
-  "id" value in each hash to match up reference/candidate pairs.
+* `--match-by-key /:id` -- this says that the top-level element should be an
+  array that contains only hashes, and CheckPlease should use the "id" value in
+  each hash to match up reference/candidate pairs.
 
-* `--match-by-key /books/:isbn` -- this will expect the top-level element to be
-  a hash with a 'books' key that refers to an array, and will use the "isbn"
-  value in each hash to match up reference/candidate pairs.
+This would correctly match up the `REFERENCE` and `CANDIDATE` documents
+described above.
 
-* `--match-by-key /authors/:id/books/:isbn` -- see below.
+* `--match-by-key /books/:isbn` -- this says that the top-level element should
+  be a hash with a 'books' key that refers to an array of book hashes, and
+  CheckPlease should use the "isbn" value in each book hash to match up
+  reference/candidate pairs.
 
-For that last one, the structure of the reference document will look like this:
+This would correctly match up the following documents:
+
+```ruby
+# REFERENCE
+{
+  "books" => [
+    { "isbn" => "12345", "title" => "Who Am I, Really?" },
+    { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+    # ...
+  ]
+  # ...
+}
+
+# CANDIDATE
+{
+  "books" => [
+    { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+    { "isbn" => "12345", "title" => "Who Am I, Really?" },
+    # ...
+  ]
+  # ...
+}
+```
+
+* `--match-by-key /authors/:id/books/:isbn` -- this example is only here to
+  show that you can have more than one **key expression** in a `match_by_key`
+  path expression.
+
+This would correctly match up the following documents:
 
 ```ruby
   {
@@ -363,11 +398,15 @@ it's supposed to use the "id" key to compare elements in an array, and do so.
 Further down, when it encounters the "books" key in both authors 1 and 2, it
 will use the "isbn" key to match up elements in the "books" array.
 
+----------------------------
+
 Finally, if there are any diffs to report, CheckPlease uses a **key/value
-expression** to report mismatches.  For example, if the reference had Anne
-Onymous' book title as "Who Am I, Really?" and the candidate listed it as "Who
-The Heck Am I?", CheckPlease would show this using the following path
-expression:  `/authors/id=1/books/isbn=12345`
+expression** to report mismatches.
+
+Using the last example above (the one with `/authors/:id/books/:isbn`), if the
+reference had Anne Onymous' book title as "Who Am I, Really?" and the candidate
+listed it as "Who The Heck Am I?", CheckPlease would show this using the
+following path expression: `/authors/id=1/books/isbn=12345`
 
 **This syntax is intended to be readable by humans first.**  If you need to
 build tooling on it... well, I'm open to suggestions.  :)
@@ -415,7 +454,7 @@ git commits and tags, and push the `.gem` file to
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/[USERNAME]/check_please. This project is intended to be a
+https://github.com/RealGeeks/check_please. This project is intended to be a
 safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
 conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
