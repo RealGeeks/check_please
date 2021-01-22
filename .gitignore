@@ -11,3 +11,5 @@
 .rspec_status
 /vendor/
 spec/examples.txt
+README.md.orig.*
+README.md.toc.*
