@@ -35,11 +35,9 @@ but be aware that CheckPlease uses a few words in a jargony way:
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
 
-TODO: document --match-by-key, including "key expressions" and "key/value expressions"
-
 ## Usage
 
-### From the Terminal
+### From the Terminal / Command Line Interface (CLI)
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
@@ -165,8 +163,207 @@ CheckPlease produces tabular output by default.  (It leans heavily on the
 amazing [table_print](http://tableprintgem.com) gem for this.)
 
 If you want to incorporate CheckPlease into some other toolchain, it can also
-print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
+print diffs as JSON to facilitate parsing.  How you do this depends on whether
+you're using CheckPlease from the command line or in Ruby, which is a good time
+to talk about...
+
+
+In Ruby, pass `format: :json` to
 `CheckPlease.render_diff`; in the CLI, use the `-f`/`--format` switch.
+
+### Flags
+
+CheckPlease has several flags that control its behavior.
+
+For quick help on which flags are available, as well as some terse help text,
+you can run the `check_please` executable with no arguments (or the `-h` or
+`--help` flags if that makes you feel better).
+
+While of course we aspire to keep this README up to date, it's probably best to
+believe things in the following priority order:
+
+* observed behavior
+* the code (start from `./lib/check_please.rb` and search for `Flags.define`,
+  then trace through as needed)
+* the tests (`spec/check_please/flags_spec.rb` describes how the flags work;
+	from there, you'll have to search on the flag's name to see how it shows up
+	in code)
+* the output of `check_please --help`
+* this README :)
+
+All flags have exactly one "Ruby name" and one or more "CLI names".  When the
+CLI runs, it parses the values in `ARGV` (using Ruby's native `OptionParser`)
+and uses that information to build a `CheckPlease::Flags` instance.  After that
+point, a flag will be referred to within the CheckPlease code exclusively by
+its "Ruby name".
+
+For example, the flag that controls the format in which diffs are displayed has
+a Ruby name of `format`, and CLI names of `-f` and `--format`.
+
+#### Setting Flags in the CLI
+
+This should behave more or less as an experienced Unix CLI user might expect.
+
+As such, you can specify, e.g., that you want output in JSON format using
+either `--format json` or `-f json`.
+
+(I might expand this section some day.  In the meantime, if you are not yet an
+experienced Unix CLI user, feel free to ask for help!  You can either open an
+issue or look for emails in the `.gemspec` file...)
+
+#### Setting Flags in Ruby
+
+All external API entry points allow you to specify flags using their Ruby names
+in the idiomatic "options Hash at the end of the argument list" that should be
+familiar to most Rubyists.  (Again, I assume that, if you're using this tool, I
+don't need to explain this further, but feel free to ask for help if you need
+it.)
+
+(Internally, CheckPlease immediately converts that options hash into a
+`CheckPlease::Flags` object, but that should be considered an implementation
+detail unless you're interested in hacking on CheckPlease itself.)
+
+For example, to get back a String containing the diffs between two data
+structures in JSON format, you might do:
+
+```
+reference = { "foo" => "wibble" }
+candidate = { "bar" => "wibble" }
+puts CheckPlease.render_diff(
+  reference,
+  candidate,
+  format: :json # <--- flags
+)
+```
+
+#### "Reentrant" Flags
+
+Several flags are "reentrant".  This means that the flag and its associated
+value **may** appear more than once in the CLI.  I've tried to make both the
+CLI and the Ruby API follow their respective environment's conventions.
+
+For example, if you want to specify a path to ignore using the
+`--reject-paths` flag, you'd invoke the CLI like this:
+
+* `[bundle exec] check_please reference.json candidate.json --select-paths /foo`
+
+And if you want to specify more than one path, that would look like:
+
+* `[bundle exec] check_please reference.json candidate.json --select-paths /foo --select-paths /bar`
+
+In Ruby, you can specify this in the options hash as a single key with an Array
+value:
+
+* `CheckPlease.render_diff(reference, candidate, select_paths: [ "/foo", "/bar" ])`
+
+_(NOTE TO MAINTAINERS: internally, the way `CheckPlease::CLI::Parser` uses
+Ruby's `OptionParser` leads to some less than obvious behavior.  Search
+`./spec/check_please/flags_spec.rb` for the word "surprising" for details.)_
+
+#### Expanded Documentation for Specific Flags
+
+##### `match_by_key`
+
+Okay.  This gets... a bit weird, and as of this writing it's still a bit experimental.
+
+For all the details on exactly how this behaves, go look in
+`./spec/check_please/comparison_spec.rb` and check out the `describe` block
+labeled `"comparing arrays by keys"`.
+
+The short version, though, is that this allows you to match up two lists of
+hashes using the value of a single key that is treated as the identifier for
+that hash.
+
+There's a lot going on in that sentence, so let's unpack it a bit.
+
+Imagine that you're comparing two documents that actually contain the same
+data, but in a different order.  To use a very simple example, let's say that
+both documents consist of a single array of two simple hashes, which we'll call
+"A" and "B":
+
+* "A" looks like this:  `{ "id" => 1, "foo" => "bar" }`
+* "B" looks like this:  `{ "id" => 2, "foo" => "spam" }`
+
+Normally, if your reference document is the list [A, B] and your candidate
+document is the list [B, A], CheckPlease will compare A and B by their position
+in the array, and you'll get a diff report that looks like this:
+
+```
+TYPE     | PATH   | REFERENCE | CANDIDATE
+---------|--------|-----------|----------
+mismatch | /1/id  | 1         | 2
+mismatch | /1/foo | "bar"     | "bat"
+mismatch | /2/id  | 2         | 1
+mismatch | /2/foo | "bat"     | "bar"
+```
+
+To solve this problem, CheckPlease adds a **key expression** to its (very
+simple) path syntax that lets you specify a **key** to use to match up elements
+in both lists, rather than simply comparing elements by position.
+
+Continuing with the above example, if we give `match_by_key` a value of
+`["/:id"]`, it will use the "id" value in both hashes (remember, A's `id` is
+`1` and B's `id` is `2`) to identify every element in both the reference array
+and the candidate array, and correctly match A and B, giving you an empty list
+of diffs.
+
+Please note that the CLI and Ruby implementations of these are a bit different
+(see the '"Reentrant" Flags' section).
+
+Here are some examples of how that looks on the command line:
+
+* `--match-by-key /:id` -- using the A and B documents above, this will expect
+  the top-level element to be an array that contains only hashes, and use the
+  "id" value in each hash to match up reference/candidate pairs.
+
+* `--match-by-key /books/:isbn` -- this will expect the top-level element to be
+  a hash with a 'books' key that refers to an array, and will use the "isbn"
+  value in each hash to match up reference/candidate pairs.
+
+* `--match-by-key /authors/:id/books/:isbn` -- see below.
+
+For that last one, the structure of the reference document will look like this:
+
+```ruby
+  {
+    "authors" => [
+      {
+        "id"    => 1,
+        "name"  => "Anne Onymous",
+        "books" => [
+          { "isbn" => "12345", "title" => "Who Am I, Really?" },
+          # ...
+        ]
+      },
+      {
+        "id"    => 2,
+        "name"  => "Pseud Onymous",
+        "books" => [
+          { "isbn" => "67890", "title" => "You'll Never Know" },
+          # ...
+        ]
+      },
+      # ...
+    ]
+  }
+```
+
+At the top level, CheckPlease will match up hash elements by key.  When it gets
+to the "authors" key, it will look at the `match_by_key` expression, see that
+it's supposed to use the "id" key to compare elements in an array, and do so.
+Further down, when it encounters the "books" key in both authors 1 and 2, it
+will use the "isbn" key to match up elements in the "books" array.
+
+Finally, if there are any diffs to report, CheckPlease uses a **key/value
+expression** to report mismatches.  For example, if the reference had Anne
+Onymous' book title as "Who Am I, Really?" and the candidate listed it as "Who
+The Heck Am I?", CheckPlease would show this using the following path
+expression:  `/authors/id=1/books/isbn=12345`
+
+**This syntax is intended to be readable by humans first.**  If you need to
+build tooling on it... well, I'm open to suggestions.  :)
+
+
 
 ## TODO (maybe)
 

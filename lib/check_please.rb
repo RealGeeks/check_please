@@ -83,7 +83,6 @@ module CheckPlease
   Flags.define :fail_fast do |flag|
     flag.default = false
     flag.coerce { |value| !!value }
-
     flag.cli_long = "--fail-fast"
     flag.description = [
       "Stop after encountering the first diff.",
@@ -138,21 +137,10 @@ module CheckPlease
     flag.cli_long = "--match-by-key FOO"
     flag.description = [
       "Specify how to match reference/candidate pairs in arrays.",
-      "NOTE: this does not yet handle non-string keys."
+      "  May be repeated; values will be treated as an 'OR' list.",
+      "  See the README for details on how to actually use this.",
+      "  This does not yet handle non-string keys."
     ]
-    ###############################################
-    ##                                           ##
-    ##  ########   #####    ######      #####    ##
-    ##     ##     ##   ##   ##   ##    ##   ##   ##
-    ##     ##    ##     ##  ##    ##  ##     ##  ##
-    ##     ##    ##     ##  ##    ##  ##     ##  ##
-    ##     ##    ##     ##  ##    ##  ##     ##  ##
-    ##     ##     ##   ##   ##   ##    ##   ##   ##
-    ##     ##      #####    ######      #####    ##
-    ##                                           ##
-    ###############################################
-    # TODO: finish the description above
-    ###############################################
   end
 
 end
