@@ -168,10 +168,6 @@ print diffs as JSON to facilitate parsing.  How you do this depends on whether
 you're using CheckPlease from the command line or in Ruby, which is a good time
 to talk about...
 
-
-In Ruby, pass `format: :json` to
-`CheckPlease.render_diff`; in the CLI, use the `-f`/`--format` switch.
-
 ### Flags
 
 CheckPlease has several flags that control its behavior.
