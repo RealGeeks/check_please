@@ -21,7 +21,7 @@ structures parsed from either of those.
             * [Setting Flags in Ruby](#setting-flags-in-ruby)
             * ["Reentrant" Flags](#reentrant-flags)
             * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
-               * [match_by_key](#match_by_key)
+               * [Flag: match_by_key](#flag-match_by_key)
       * [TODO (maybe)](#todo-maybe)
       * [Development](#development)
       * [Contributing](#contributing)
@@ -293,26 +293,26 @@ Ruby's `OptionParser` leads to some less than obvious behavior.  Search
 
 #### Expanded Documentation for Specific Flags
 
-##### match_by_key
+##### Flag: `match_by_key`
 
-_**I know this looks like a LOT of information, but it's really not that bad.  I
-just need some very specific examples, and talking about this stuff in English
-(rather than code) is hard.  Take a moment for some deep breaths if you need
-it.  :)**_
+> I know this looks like a LOT of information, but it's really not that bad.
+> This feature just requires specific examples to describe, and talking about
+> it in English (rather than code) is hard.  Take a moment for some
+> deep breaths if you need it.  :)
 
-_If you're comfortable reading RSpec and/or want to check out all the edge
-cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
-`describe` block labeled `"comparing arrays by keys"`._
+> _If you're comfortable reading RSpec and/or want to check out all the edge
+> cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
+> `describe` block labeled `"comparing arrays by keys"`._
 
-The short version is that this allows you to match up arrays of hashes using
-the value of a single key that is treated as the identifier for each hash.
+The `match_by_key` flag allows you to match up arrays of hashes using the value
+of a single key that is treated as the identifier for each hash.
 
 There's a lot going on in that sentence, so let's unpack it a bit.
 
-Imagine you're comparing two API endpoints that actually return the same data,
-but in different orders.  To use a contrived example, let's say that both
-documents consist of a single array of two simple hashes, but the reference
-array and the candidate array are reversed:
+Imagine you're comparing two documents that contain the same data, but in
+different orders.  To use a contrived example, let's say that both documents
+consist of a single array of two simple hashes, but the reference array and the
+candidate array are reversed:
 
 ```ruby
 # REFERENCE
@@ -346,21 +346,11 @@ and the candidate array, and correctly match A and B, giving you an empty list
 of diffs.
 
 Please note that the CLI and Ruby implementations of these are a bit different
-(see the '"Reentrant" Flags' section).
+(see the '"Reentrant" Flags' section), so if you're doing this from the command line, it'll look like `--match-by-key /:id`
 
-Here are some examples of how that looks on the command line:
-
-* `--match-by-key /:id` -- this says that the top-level element should be an
-  array that contains only hashes, and CheckPlease should use the "id" value in
-  each hash to match up reference/candidate pairs.
-
-This would correctly match up the `REFERENCE` and `CANDIDATE` documents
-described above.
-
-* `--match-by-key /books/:isbn` -- this says that the top-level element should
-  be a hash with a 'books' key that refers to an array of book hashes, and
-  CheckPlease should use the "isbn" value in each book hash to match up
-  reference/candidate pairs.
+Here, have another example.  If you want to specify a match_by_key expression
+below the root of the document, you can put the **key expression** further down
+the path: `--match-by-key /books/:isbn`
 
 This would correctly match up the following documents:
 
@@ -370,9 +360,7 @@ This would correctly match up the following documents:
   "books" => [
     { "isbn" => "12345", "title" => "Who Am I, Really?" },
     { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
-    # ...
   ]
-  # ...
 }
 
 # CANDIDATE
@@ -380,62 +368,58 @@ This would correctly match up the following documents:
   "books" => [
     { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
     { "isbn" => "12345", "title" => "Who Am I, Really?" },
-    # ...
   ]
-  # ...
 }
 ```
 
-* `--match-by-key /authors/:id/books/:isbn` -- this example is only here to
-  show that you can have more than one **key expression** in a `match_by_key`
-  path expression.
+Finally, if you have deeply nested data with arrays of hashes at multiple
+levels, you can specify more than one **key expression** in a single path,
+like: `--match-by-key /authors/:id/books/:isbn`
 
 This would correctly match up the following documents:
 
 ```ruby
-  {
-    "authors" => [
-      {
-        "id"    => 1,
-        "name"  => "Anne Onymous",
-        "books" => [
-          { "isbn" => "12345", "title" => "Who Am I, Really?" },
-          # ...
-        ]
-      },
-      {
-        "id"    => 2,
-        "name"  => "Pseud Onymous",
-        "books" => [
-          { "isbn" => "67890", "title" => "You'll Never Know" },
-          # ...
-        ]
-      },
-      # ...
-    ]
-  }
+# REFERENCE
+{
+  "authors" => [
+    {
+      "id"    => 1,
+      "name"  => "Anne Onymous",
+      "books" => [
+        { "isbn" => "12345", "title" => "Who Am I, Really?" },
+        { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+      ]
+    },
+  ]
+}
+
+# CANDIDATE
+{
+  "authors" => [
+    {
+      "id"    => 1,
+      "name"  => "Anne Onymous",
+      "books" => [
+        { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+        { "isbn" => "12345", "title" => "Who Am I, Really?" },
+      ]
+    },
+  ]
+}
 ```
-
-At the top level, CheckPlease will match up hash elements by key.  When it gets
-to the "authors" key, it will look at the `match_by_key` expression, see that
-it's supposed to use the "id" key to compare elements in an array, and do so.
-Further down, when it encounters the "books" key in both authors 1 and 2, it
-will use the "isbn" key to match up elements in the "books" array.
-
-----------------------------
 
 Finally, if there are any diffs to report, CheckPlease uses a **key/value
 expression** to report mismatches.
 
 Using the last example above (the one with `/authors/:id/books/:isbn`), if the
 reference had Anne Onymous' book title as "Who Am I, Really?" and the candidate
-listed it as "Who The Heck Am I?", CheckPlease would show this using the
-following path expression: `/authors/id=1/books/isbn=12345`
+listed it as "Who The Heck Am I?", CheckPlease would show the mismatch using
+the following path expression: `/authors/id=1/books/isbn=12345`
 
 **This syntax is intended to be readable by humans first.**  If you need to
-build tooling on it... well, I'm open to suggestions.  :)
+build tooling that consumes it... well, I'm open to suggestions.  :)
 
-
+-----
 
 ## TODO (maybe)
 
@@ -463,6 +447,8 @@ build tooling on it... well, I'm open to suggestions.  :)
   * but this may not actually be worth the time and complexity to implement, so
     think about this first...
 
+-----
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
@@ -482,7 +468,6 @@ https://github.com/RealGeeks/check_please. This project is intended to be a
 safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
 conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
-
 
 ## License
 

@@ -136,10 +136,10 @@ module CheckPlease
 
     flag.cli_long = "--match-by-key FOO"
     flag.description = [
-      "Specify how to match reference/candidate pairs in arrays.",
+      "Specify how to match reference/candidate pairs in arrays of hashes.",
       "  May be repeated; values will be treated as an 'OR' list.",
       "  See the README for details on how to actually use this.",
-      "  This does not yet handle non-string keys."
+      "  NOTE: this does not yet handle non-string keys."
     ]
   end
 
