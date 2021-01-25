@@ -28,7 +28,6 @@ structures parsed from either of those.
       * [License](#license)
       * [Code of Conduct](#code-of-conduct)
 
-<!-- Added by: sam, at: Fri Jan 22 12:08:57 PST 2021 -->
 
 <!--te-->
 <!-- end of auto-generated TOC -->
