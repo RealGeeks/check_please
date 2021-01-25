@@ -3,6 +3,10 @@ require "rspec/core/rake_task"
 require "pathname"
 require "tempfile"
 
+
+PROJECT_ROOT = Pathname.new(File.dirname(__FILE__))
+
+
 namespace :spec do
   desc "All tests *except* those that exercise the executable CLI"
   RSpec::Core::RakeTask.new(:not_cli) do |t|
@@ -17,6 +21,14 @@ namespace :spec do
   RSpec::Core::RakeTask.new(:cli) do |t|
     t.rspec_opts = "--tag cli"
   end
+
+  desc "approve changes to the CLI's `--help` output"
+  task :approve_cli_help_output do
+    output = `exe/check_please`
+    File.open(PROJECT_ROOT.join("spec/fixtures/cli-help-output"), "w") do |f|
+      f << output
+    end
+  end
 end
 
 # By default, `rake spec` should run fast specs first, then cli if those all pass
@@ -27,7 +39,6 @@ task :default => :spec
 
 
 
-PROJECT_ROOT = Pathname.new(File.dirname(__FILE__))
 
 desc "Generate TOC for the README"
 task :toc do

@@ -1,0 +1,31 @@
+Usage: check_please <reference> <candidate> [FLAGS]
+
+  Tool for parsing and diffing two JSON documents.
+
+  Arguments:
+    <reference> is the name of a file to use as, well, the reference.
+    <candidate> is the name of a file to compare against the reference.
+
+    NOTE: If you have a utility like MacOS's `pbpaste`, you MAY omit
+    the <candidate> arg, and pipe the second document instead, like:
+
+      $ pbpaste | check_please <reference>
+
+  FLAGS:
+    -f, --format FORMAT              Format in which to present diffs.
+                                       (Allowed values: [json, table])
+    -n, --max-diffs MAX_DIFFS        Stop after encountering a specified number of diffs.
+        --fail-fast                  Stop after encountering the first diff.
+                                       (equivalent to '--max-diffs 1')
+    -d, --max_depth MAX_DEPTH        Limit the number of levels to descend when comparing documents.
+                                       (NOTE: root has depth = 1)
+    -s, --select-paths PATH_EXPR     ONLY record diffs matching the provided PATH expression.
+                                       May be repeated; values will be treated as an 'OR' list.
+                                       Can't be combined with --reject-paths.
+    -r, --reject-paths PATH_EXPR     DON'T record diffs matching the provided PATH expression.
+                                       May be repeated; values will be treated as an 'OR' list.
+                                       Can't be combined with --select-paths.
+        --match-by-key FOO           Specify how to match reference/candidate pairs in arrays of hashes.
+                                       May be repeated; values will be treated as an 'OR' list.
+                                       See the README for details on how to actually use this.
+                                       NOTE: this does not yet handle non-string keys.

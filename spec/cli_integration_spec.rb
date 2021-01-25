@@ -18,6 +18,30 @@ RSpec.describe "bin/check_please executable", :cli do
   # Please only add specs here for behavior that you can't possibly test any other way.
   ###############################################
 
+  specify "output of -h/--help" do
+    # NOTE: this spec is hand-rolled because I don't expect to have any more like
+    # it.  I considered using the 'approvals' gem, but it drags in a dependency
+    # on Nokogiri that I wanted to avoid.  If you do find yourself needing to do
+    # more specs like this, 'approvals' might be useful...
+
+    expected = fixture_file_contents("cli-help-output").rstrip
+    output = run_cli("--help").rstrip
+
+    begin
+      expect( output ).to eq( expected )
+    rescue RSpec::Expectations::ExpectationNotMetError => e
+      puts <<~EOF
+
+        --> NOTE: the output of the executable's `--help` flag has changed.
+        --> If you want to keep these changes, please run:
+        -->
+        -->   bundle exec rake spec:approve_cli_help_output
+
+      EOF
+      raise e
+    end
+  end
+
   context "for a ref/can pair with a few discrepancies" do
     let(:ref_file) { "spec/fixtures/forty-two-reference.json" }
     let(:can_file) { "spec/fixtures/forty-two-candidate.json" }
@@ -48,11 +72,9 @@ RSpec.describe "bin/check_please executable", :cli do
     end
 
     describe "running the executable with no arguments" do
-      specify "prints help and exits" do
-        output = run_cli("")
+      specify "prints a message about the missing reference and exits" do
+        output = run_cli()
         expect( output ).to include( CheckPlease::ELEVATOR_PITCH )
-        expect( output ).to include( "--format FORMAT" )
-
         expect( output ).to_not include( "Missing <reference>" )
       end
     end
@@ -79,7 +101,7 @@ RSpec.describe "bin/check_please executable", :cli do
       cmd << "|"
     end
     cmd << "exe/check_please"
-    cmd.concat << args
+    cmd.concat args
 
     out = nil # scope hack
     Timeout.timeout(TIME_OUT_CLI_AFTER) do
