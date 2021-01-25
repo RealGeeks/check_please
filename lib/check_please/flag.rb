@@ -29,6 +29,16 @@ module CheckPlease
       @coercer = block
     end
 
+    def description=(value)
+      if value.is_a?(String) && value =~ /\n/m
+        lines = value.lines
+      else
+        lines = Array(value).map(&:to_s)
+      end
+
+      @description = lines.map(&:rstrip)
+    end
+
     def mutually_exclusive_to(flag_name)
       @validators << ->(flags, _) { flags.send(flag_name).empty? }
     end

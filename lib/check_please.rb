@@ -65,10 +65,10 @@ module CheckPlease
 
     flag.cli_long = "--format FORMAT"
     flag.cli_short = "-f FORMAT"
-    flag.description = [
-      "Format in which to present diffs.",
-      "  (Allowed values: [#{allowed_values.join(", ")}])",
-    ]
+    flag.description = <<~EOF
+      Format in which to present diffs.
+        (Allowed values: [#{allowed_values.join(", ")}])
+    EOF
   end
 
   Flags.define :max_diffs do |flag|
@@ -84,10 +84,10 @@ module CheckPlease
     flag.default = false
     flag.coerce { |value| !!value }
     flag.cli_long = "--fail-fast"
-    flag.description = [
-      "Stop after encountering the first diff.",
-      "  (equivalent to '--max-diffs 1')",
-    ]
+    flag.description = <<~EOF
+      Stop after encountering the first diff.
+        (equivalent to '--max-diffs 1')
+    EOF
   end
 
   Flags.define :max_depth do |flag|
@@ -96,10 +96,10 @@ module CheckPlease
 
     flag.cli_long = "--max_depth MAX_DEPTH"
     flag.cli_short = "-d MAX_DEPTH"
-    flag.description = [
-      "Limit the number of levels to descend when comparing documents.",
-      "  (NOTE: root has depth = 1)",
-    ]
+    flag.description = <<~EOF
+      Limit the number of levels to descend when comparing documents.
+        (NOTE: root has depth = 1)
+    EOF
   end
 
   Flags.define :select_paths do |flag|
@@ -109,11 +109,11 @@ module CheckPlease
 
     flag.cli_short = "-s PATH_EXPR"
     flag.cli_long = "--select-paths PATH_EXPR"
-    flag.description = [
-      "ONLY record diffs matching the provided PATH expression.",
-      "  May be repeated; values will be treated as an 'OR' list.",
-      "  Can't be combined with --reject-paths.",
-    ]
+    flag.description = <<~EOF
+      ONLY record diffs matching the provided PATH expression.
+        May be repeated; values will be treated as an 'OR' list.
+        Can't be combined with --reject-paths.
+    EOF
   end
 
   Flags.define :reject_paths do |flag|
@@ -123,11 +123,11 @@ module CheckPlease
 
     flag.cli_short = "-r PATH_EXPR"
     flag.cli_long = "--reject-paths PATH_EXPR"
-    flag.description = [
-      "DON'T record diffs matching the provided PATH expression.",
-      "  May be repeated; values will be treated as an 'OR' list.",
-      "  Can't be combined with --select-paths.",
-    ]
+    flag.description = <<~EOF
+      DON'T record diffs matching the provided PATH expression.
+        May be repeated; values will be treated as an 'OR' list.
+        Can't be combined with --select-paths.
+    EOF
   end
 
   Flags.define :match_by_key do |flag|
@@ -135,12 +135,12 @@ module CheckPlease
     flag.coerce { |value| CheckPlease::Path.reify(value) }
 
     flag.cli_long = "--match-by-key FOO"
-    flag.description = [
-      "Specify how to match reference/candidate pairs in arrays of hashes.",
-      "  May be repeated; values will be treated as an 'OR' list.",
-      "  See the README for details on how to actually use this.",
-      "  NOTE: this does not yet handle non-string keys."
-    ]
+    flag.description = <<~EOF
+      Specify how to match reference/candidate pairs in arrays of hashes.
+        May be repeated; values will be treated as an 'OR' list.
+        See the README for details on how to actually use this.
+        NOTE: this does not yet handle non-string keys.
+    EOF
   end
 
 end
