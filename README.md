@@ -323,8 +323,7 @@ candidate array are reversed:
 ```
 
 By default, CheckPlease will match up array elements by their position in the
-array, so this will compare the hash with id=1 against the hash with id=2 and
-generate a diff report like this:
+array, resulting in a diff report like this:
 
 ```
 TYPE     | PATH   | REFERENCE | CANDIDATE
