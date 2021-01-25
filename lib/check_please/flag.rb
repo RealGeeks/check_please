@@ -43,8 +43,8 @@ module CheckPlease
       @validators << ->(flags, _) { flags.send(flag_name).empty? }
     end
 
-    def reentrant
-      @reentrant = true
+    def repeatable
+      @repeatable = true
       self.default_proc = ->{ Array.new }
     end
 
@@ -57,7 +57,7 @@ module CheckPlease
     def __set__(value, on:, flags:)
       val = _coerce(value)
       _validate(flags, val)
-      if @reentrant
+      if @repeatable
         on[name] ||= []
         on[name].concat(Array(val))
       else

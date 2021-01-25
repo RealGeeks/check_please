@@ -103,7 +103,7 @@ module CheckPlease
   end
 
   Flags.define :select_paths do |flag|
-    flag.reentrant
+    flag.repeatable
     flag.mutually_exclusive_to :reject_paths
     flag.coerce { |value| CheckPlease::Path.reify(value) }
 
@@ -117,7 +117,7 @@ module CheckPlease
   end
 
   Flags.define :reject_paths do |flag|
-    flag.reentrant
+    flag.repeatable
     flag.mutually_exclusive_to :select_paths
     flag.coerce { |value| CheckPlease::Path.reify(value) }
 
@@ -131,7 +131,7 @@ module CheckPlease
   end
 
   Flags.define :match_by_key do |flag|
-    flag.reentrant
+    flag.repeatable
     flag.coerce { |value| CheckPlease::Path.reify(value) }
 
     flag.cli_long = "--match-by-key FOO"

@@ -267,11 +267,11 @@ puts CheckPlease.render_diff(
 )
 ```
 
-### "Reentrant" Flags
+### Repeatable Flags
 
-Several flags are "reentrant".  This means that the flag and its associated
-value **may** appear more than once in the CLI.  I've tried to make both the
-CLI and the Ruby API follow their respective environment's conventions.
+Several flags **may** be specified more than once when invoking the CLI.  I've
+tried to make both the CLI and the Ruby API follow their respective
+environment's conventions.
 
 For example, if you want to specify a path to ignore using the
 `--reject-paths` flag, you'd invoke the CLI like this:
@@ -346,7 +346,8 @@ and the candidate array, and correctly match A and B, giving you an empty list
 of diffs.
 
 Please note that the CLI and Ruby implementations of these are a bit different
-(see the '"Reentrant" Flags' section), so if you're doing this from the command line, it'll look like `--match-by-key /:id`
+(see "Setting Flags in the CLI" versus "Setting Flags in Ruby"), so if you're
+doing this from the command line, it'll look like: `--match-by-key /:id`
 
 Here, have another example.  If you want to specify a match_by_key expression
 below the root of the document, you can put the **key expression** further down
