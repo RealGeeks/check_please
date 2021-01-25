@@ -289,7 +289,8 @@ value:
 
 _(NOTE TO MAINTAINERS: internally, the way `CheckPlease::CLI::Parser` uses
 Ruby's `OptionParser` leads to some less than obvious behavior.  Search
-`./spec/check_please/flags_spec.rb` for the word "surprising" for details.)_
+[./spec/check_please/flags_spec.rb](spec/check_please/flags_spec.rb) for the
+word "surprising" for details.)_
 
 ### Expanded Documentation for Specific Flags
 
