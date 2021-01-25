@@ -349,7 +349,7 @@ Please note that the CLI and Ruby implementations of these are a bit different
 
 Here, have another example.  If you want to specify a match_by_key expression
 below the root of the document, you can put the **key expression** further down
-the path: `--match-by-key /books/:isbn`
+the path: `/books/:isbn`
 
 This would correctly match up the following documents:
 
@@ -373,7 +373,7 @@ This would correctly match up the following documents:
 
 Finally, if you have deeply nested data with arrays of hashes at multiple
 levels, you can specify more than one **key expression** in a single path,
-like: `--match-by-key /authors/:id/books/:isbn`
+like: `/authors/:id/books/:isbn`
 
 This would correctly match up the following documents:
 
