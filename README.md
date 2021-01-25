@@ -6,33 +6,33 @@ structures parsed from either of those.
 <!-- start of auto-generated TOC; see https://github.com/ekalinin/github-markdown-toc -->
 <!--ts-->
    * [check_please](#check_please)
-      * [Installation](#installation)
-      * [Terminology](#terminology)
-      * [Usage](#usage)
-         * [From the Terminal / Command Line Interface (CLI)](#from-the-terminal--command-line-interface-cli)
-         * [From RSpec](#from-rspec)
-         * [From Ruby](#from-ruby)
-         * [Understanding the Output](#understanding-the-output)
-            * [Diff Types](#diff-types)
-            * [Paths](#paths)
-            * [Output Formats](#output-formats)
-         * [Flags](#flags)
-            * [Setting Flags in the CLI](#setting-flags-in-the-cli)
-            * [Setting Flags in Ruby](#setting-flags-in-ruby)
-            * ["Reentrant" Flags](#reentrant-flags)
-            * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
-               * [Flag: match_by_key](#flag-match_by_key)
-      * [TODO (maybe)](#todo-maybe)
-      * [Development](#development)
-      * [Contributing](#contributing)
-      * [License](#license)
-      * [Code of Conduct](#code-of-conduct)
+   * [Installation](#installation)
+   * [Terminology](#terminology)
+   * [Usage](#usage)
+      * [From the Terminal / Command Line Interface (CLI)](#from-the-terminal--command-line-interface-cli)
+      * [From RSpec](#from-rspec)
+      * [From Ruby](#from-ruby)
+      * [Understanding the Output](#understanding-the-output)
+         * [Diff Types](#diff-types)
+         * [Paths](#paths)
+         * [Output Formats](#output-formats)
+      * [Flags](#flags)
+         * [Setting Flags in the CLI](#setting-flags-in-the-cli)
+         * [Setting Flags in Ruby](#setting-flags-in-ruby)
+         * ["Reentrant" Flags](#reentrant-flags)
+         * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
+            * [Flag: match_by_key](#flag-match_by_key)
+   * [TODO (maybe)](#todo-maybe)
+   * [Development](#development)
+   * [Contributing](#contributing)
+   * [License](#license)
+   * [Code of Conduct](#code-of-conduct)
 
 
 <!--te-->
 <!-- end of auto-generated TOC -->
 
-## Installation
+# Installation
 
 Add this line to your application's Gemfile:
 
@@ -48,7 +48,7 @@ Or install it yourself as:
 
     $ gem install check_please
 
-## Terminology
+# Terminology
 
 I know, you just want to see how to use this thing.  Feel free to scroll down,
 but be aware that CheckPlease uses a few words in a jargony way:
@@ -69,9 +69,9 @@ be talking about "hashes" instead of "objects", because I assume this will
 mostly be used by Ruby developers.  Feel free to substitute "object" wherever
 you see "hash" if that's easier for you.  :)
 
-## Usage
+# Usage
 
-### From the Terminal / Command Line Interface (CLI)
+## From the Terminal / Command Line Interface (CLI)
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
@@ -82,7 +82,7 @@ of giving it a second filename as the argument.  (This is especially useful if
 you're copying an XHR response out of a web browser's dev tools and have a tool
 like MacOS's `pbpaste` utility.)
 
-### From RSpec
+## From RSpec
 
 See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).
 
@@ -91,7 +91,7 @@ like to provide custom logic for diffing your own classes, you might be better
 served by the [super_diff](https://github.com/mcmire/super_diff) gem.  Check it
 out!
 
-### From Ruby
+## From Ruby
 
 See also: [./usage_examples.rb](usage_examples.rb).
 
@@ -103,7 +103,7 @@ Or, if you'd like to inspect the diffs in your own way, use `CheckPlease.diff`
 instead.  You'll get back a `CheckPlease::Diffs` custom collection that
 contains `CheckPlease::Diff` instances.
 
-### Understanding the Output
+## Understanding the Output
 
 CheckPlease follows the Unix philosophy of "no news is good news".  If your
 **candidate** matches your **reference**, you'll get an empty message.
@@ -157,7 +157,7 @@ mismatch      | /meta/foo | spam       | foo
 
 Let's start with the leftmost column...
 
-#### Diff Types
+### Diff Types
 
 The above example is intended to illustrate every possible type of diff that
 CheckPlease defines:
@@ -177,7 +177,7 @@ CheckPlease defines:
 * **missing** is the opposite of **extra**:  inside an Array or a Hash, the
   **reference** contained elements that were not found in the **candidate**.
 
-#### Paths
+### Paths
 
 The second column contains a path expression.  This is extremely lo-fi:
 
@@ -192,7 +192,7 @@ _**Being primarily a Ruby developer, I'm quite ignorant of conventions in the
 JS community; if there's an existing convention for paths, please open an
 issue!**_
 
-#### Output Formats
+### Output Formats
 
 CheckPlease produces tabular output by default.  (It leans heavily on the
 amazing [table_print](http://tableprintgem.com) gem for this.)
@@ -202,7 +202,7 @@ print diffs as JSON to facilitate parsing.  How you do this depends on whether
 you're using CheckPlease from the command line or in Ruby, which is a good time
 to talk about...
 
-### Flags
+## Flags
 
 CheckPlease has several flags that control its behavior.
 
@@ -231,7 +231,7 @@ its "Ruby name".
 For example, the flag that controls the format in which diffs are displayed has
 a Ruby name of `format`, and CLI names of `-f` and `--format`.
 
-#### Setting Flags in the CLI
+### Setting Flags in the CLI
 
 This should behave more or less as an experienced Unix CLI user might expect.
 
@@ -242,7 +242,7 @@ either `--format json` or `-f json`.
 experienced Unix CLI user, feel free to ask for help!  You can either open an
 issue or look for emails in the `.gemspec` file...)
 
-#### Setting Flags in Ruby
+### Setting Flags in Ruby
 
 All external API entry points allow you to specify flags using their Ruby names
 in the idiomatic "options Hash at the end of the argument list" that should be
@@ -267,7 +267,7 @@ puts CheckPlease.render_diff(
 )
 ```
 
-#### "Reentrant" Flags
+### "Reentrant" Flags
 
 Several flags are "reentrant".  This means that the flag and its associated
 value **may** appear more than once in the CLI.  I've tried to make both the
@@ -291,9 +291,9 @@ _(NOTE TO MAINTAINERS: internally, the way `CheckPlease::CLI::Parser` uses
 Ruby's `OptionParser` leads to some less than obvious behavior.  Search
 `./spec/check_please/flags_spec.rb` for the word "surprising" for details.)_
 
-#### Expanded Documentation for Specific Flags
+### Expanded Documentation for Specific Flags
 
-##### Flag: `match_by_key`
+#### Flag: `match_by_key`
 
 > I know this looks like a LOT of information, but it's really not that bad.
 > This feature just requires specific examples to describe, and talking about
@@ -420,7 +420,7 @@ build tooling that consumes it... well, I'm open to suggestions.  :)
 
 -----
 
-## TODO (maybe)
+# TODO (maybe)
 
 * document flags for rspec matcher
 * command line flags for :allthethings:!
@@ -448,7 +448,7 @@ build tooling that consumes it... well, I'm open to suggestions.  :)
 
 -----
 
-## Development
+# Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `rake spec` to run the tests. You can also run `bin/console` for an interactive
@@ -460,7 +460,7 @@ release a new version, update the version number in `version.rb`, and then run
 git commits and tags, and push the `.gem` file to
 [rubygems.org](https://rubygems.org).
 
-## Contributing
+# Contributing
 
 Bug reports and pull requests are welcome on GitHub at
 https://github.com/RealGeeks/check_please. This project is intended to be a
@@ -468,12 +468,12 @@ safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
 conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
 
-## License
+# License
 
 The gem is available as open source under the terms of the [MIT
 License](https://opensource.org/licenses/MIT).
 
-## Code of Conduct
+# Code of Conduct
 
 Everyone interacting in the CheckPlease project's codebases, issue trackers,
 chat rooms and mailing lists is expected to follow the [code of
