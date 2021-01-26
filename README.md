@@ -296,10 +296,10 @@ word "surprising" for details.)_
 
 #### Flag: `match_by_key`
 
-> I know this looks like a LOT of information, but it's really not that bad.
-> This feature just requires specific examples to describe, and talking about
-> it in English (rather than code) is hard.  Take a moment for some
-> deep breaths if you need it.  :)
+> **I know this looks like a LOT of information, but it's really not that
+> bad!**  This feature just requires specific examples to describe, and talking
+> about it in English (rather than code) is hard.  Take a moment for some deep
+> breaths if you need it.  :)
 
 > _If you're comfortable reading RSpec and/or want to check out all the edge
 > cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
@@ -468,7 +468,7 @@ Bug reports and pull requests are welcome on GitHub at
 https://github.com/RealGeeks/check_please. This project is intended to be a
 safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
-conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/RealGeeks/check_please/blob/master/CODE_OF_CONDUCT.md).
 
 # License
 
@@ -479,4 +479,4 @@ License](https://opensource.org/licenses/MIT).
 
 Everyone interacting in the CheckPlease project's codebases, issue trackers,
 chat rooms and mailing lists is expected to follow the [code of
-conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/RealGeeks/check_please/blob/master/CODE_OF_CONDUCT.md).
