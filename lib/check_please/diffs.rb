@@ -47,6 +47,10 @@ module CheckPlease
       @list.map(&:attributes)
     end
 
+    def to_s(flags = {})
+      CheckPlease::Printers.render(self, flags)
+    end
+
     extend Forwardable
     def_delegators :@list, *%i[
       each

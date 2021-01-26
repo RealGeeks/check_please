@@ -3,7 +3,36 @@
 Check for differences between two JSON documents, YAML documents, or Ruby data
 structures parsed from either of those.
 
-## Installation
+<!-- start of auto-generated TOC; see https://github.com/ekalinin/github-markdown-toc -->
+<!--ts-->
+   * [check_please](#check_please)
+   * [Installation](#installation)
+   * [Terminology](#terminology)
+   * [Usage](#usage)
+      * [From the Terminal / Command Line Interface (CLI)](#from-the-terminal--command-line-interface-cli)
+      * [From RSpec](#from-rspec)
+      * [From Ruby](#from-ruby)
+      * [Understanding the Output](#understanding-the-output)
+         * [Diff Types](#diff-types)
+         * [Paths](#paths)
+         * [Output Formats](#output-formats)
+      * [Flags](#flags)
+         * [Setting Flags in the CLI](#setting-flags-in-the-cli)
+         * [Setting Flags in Ruby](#setting-flags-in-ruby)
+         * ["Reentrant" Flags](#reentrant-flags)
+         * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
+            * [Flag: match_by_key](#flag-match_by_key)
+   * [TODO (maybe)](#todo-maybe)
+   * [Development](#development)
+   * [Contributing](#contributing)
+   * [License](#license)
+   * [Code of Conduct](#code-of-conduct)
+
+
+<!--te-->
+<!-- end of auto-generated TOC -->
+
+# Installation
 
 Add this line to your application's Gemfile:
 
@@ -19,7 +48,7 @@ Or install it yourself as:
 
     $ gem install check_please
 
-## Terminology
+# Terminology
 
 I know, you just want to see how to use this thing.  Feel free to scroll down,
 but be aware that CheckPlease uses a few words in a jargony way:
@@ -35,9 +64,14 @@ but be aware that CheckPlease uses a few words in a jargony way:
   **reference** and the **candidate**.  More on this in "Understanding the Output",
   below.
 
-## Usage
+Also, even though this gem was born from a need to compare JSON documents, I'll
+be talking about "hashes" instead of "objects", because I assume this will
+mostly be used by Ruby developers.  Feel free to substitute "object" wherever
+you see "hash" if that's easier for you.  :)
 
-### From the Terminal
+# Usage
+
+## From the Terminal / Command Line Interface (CLI)
 
 Use the `bin/check_please` executable.  (To get started, run it with the '-h' flag.)
 
@@ -48,7 +82,7 @@ of giving it a second filename as the argument.  (This is especially useful if
 you're copying an XHR response out of a web browser's dev tools and have a tool
 like MacOS's `pbpaste` utility.)
 
-### From RSpec
+## From RSpec
 
 See [check_please_rspec_matcher](https://github.com/RealGeeks/check_please_rspec_matcher).
 
@@ -57,7 +91,7 @@ like to provide custom logic for diffing your own classes, you might be better
 served by the [super_diff](https://github.com/mcmire/super_diff) gem.  Check it
 out!
 
-### From Ruby
+## From Ruby
 
 See also: [./usage_examples.rb](usage_examples.rb).
 
@@ -69,7 +103,7 @@ Or, if you'd like to inspect the diffs in your own way, use `CheckPlease.diff`
 instead.  You'll get back a `CheckPlease::Diffs` custom collection that
 contains `CheckPlease::Diff` instances.
 
-### Understanding the Output
+## Understanding the Output
 
 CheckPlease follows the Unix philosophy of "no news is good news".  If your
 **candidate** matches your **reference**, you'll get an empty message.
@@ -123,7 +157,7 @@ mismatch      | /meta/foo | spam       | foo
 
 Let's start with the leftmost column...
 
-#### Diff Types
+### Diff Types
 
 The above example is intended to illustrate every possible type of diff that
 CheckPlease defines:
@@ -136,13 +170,14 @@ CheckPlease defines:
   and it stops when it encounters a type mismatch in order to avoid producing a
   lot of "garbage" diff output.)_
 * **mismatch** means that both the **reference** and the **candidate** had a
-  value at the given path, and neither value was an Array or a Hash.
+  value at the given path, and neither value was an Array or a Hash, and the
+  two values were not equal.
 * **extra** means that, inside an Array or a Hash, the **candidate** contained
-  values that were not found in the **reference**.
+  elements that were not found in the **reference**.
 * **missing** is the opposite of **extra**:  inside an Array or a Hash, the
-  **reference** contained values that were not found in the **candidate**.
+  **reference** contained elements that were not found in the **candidate**.
 
-#### Paths
+### Paths
 
 The second column contains a path expression.  This is extremely lo-fi:
 
@@ -157,16 +192,237 @@ _**Being primarily a Ruby developer, I'm quite ignorant of conventions in the
 JS community; if there's an existing convention for paths, please open an
 issue!**_
 
-#### Output Formats
+### Output Formats
 
 CheckPlease produces tabular output by default.  (It leans heavily on the
 amazing [table_print](http://tableprintgem.com) gem for this.)
 
 If you want to incorporate CheckPlease into some other toolchain, it can also
-print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
-`CheckPlease.render_diff`; in the CLI, use the `-f`/`--format` switch.
+print diffs as JSON to facilitate parsing.  How you do this depends on whether
+you're using CheckPlease from the command line or in Ruby, which is a good time
+to talk about...
 
-## TODO (maybe)
+## Flags
+
+CheckPlease has several flags that control its behavior.
+
+For quick help on which flags are available, as well as some terse help text,
+you can run the `check_please` executable with no arguments (or the `-h` or
+`--help` flags if that makes you feel better).
+
+While of course we aspire to keep this README up to date, it's probably best to
+believe things in the following priority order:
+
+* observed behavior
+* the code (start from `./lib/check_please.rb` and search for `Flags.define`,
+  then trace through as needed)
+* the tests (`spec/check_please/flags_spec.rb` describes how the flags work;
+	from there, you'll have to search on the flag's name to see how it shows up
+	in code)
+* the output of `check_please --help`
+* this README :)
+
+All flags have exactly one "Ruby name" and one or more "CLI names".  When the
+CLI runs, it parses the values in `ARGV` (using Ruby's native `OptionParser`)
+and uses that information to build a `CheckPlease::Flags` instance.  After that
+point, a flag will be referred to within the CheckPlease code exclusively by
+its "Ruby name".
+
+For example, the flag that controls the format in which diffs are displayed has
+a Ruby name of `format`, and CLI names of `-f` and `--format`.
+
+### Setting Flags in the CLI
+
+This should behave more or less as an experienced Unix CLI user might expect.
+
+As such, you can specify, e.g., that you want output in JSON format using
+either `--format json` or `-f json`.
+
+(I might expand this section some day.  In the meantime, if you are not yet an
+experienced Unix CLI user, feel free to ask for help!  You can either open an
+issue or look for emails in the `.gemspec` file...)
+
+### Setting Flags in Ruby
+
+All external API entry points allow you to specify flags using their Ruby names
+in the idiomatic "options Hash at the end of the argument list" that should be
+familiar to most Rubyists.  (Again, I assume that, if you're using this tool, I
+don't need to explain this further, but feel free to ask for help if you need
+it.)
+
+(Internally, CheckPlease immediately converts that options hash into a
+`CheckPlease::Flags` object, but that should be considered an implementation
+detail unless you're interested in hacking on CheckPlease itself.)
+
+For example, to get back a String containing the diffs between two data
+structures in JSON format, you might do:
+
+```
+reference = { "foo" => "wibble" }
+candidate = { "bar" => "wibble" }
+puts CheckPlease.render_diff(
+  reference,
+  candidate,
+  format: :json # <--- flags
+)
+```
+
+### Repeatable Flags
+
+Several flags **may** be specified more than once when invoking the CLI.  I've
+tried to make both the CLI and the Ruby API follow their respective
+environment's conventions.
+
+For example, if you want to specify a path to ignore using the
+`--reject-paths` flag, you'd invoke the CLI like this:
+
+* `[bundle exec] check_please reference.json candidate.json --select-paths /foo`
+
+And if you want to specify more than one path, that would look like:
+
+* `[bundle exec] check_please reference.json candidate.json --select-paths /foo --select-paths /bar`
+
+In Ruby, you can specify this in the options hash as a single key with an Array
+value:
+
+* `CheckPlease.render_diff(reference, candidate, select_paths: [ "/foo", "/bar" ])`
+
+_(NOTE TO MAINTAINERS: internally, the way `CheckPlease::CLI::Parser` uses
+Ruby's `OptionParser` leads to some less than obvious behavior.  Search
+[./spec/check_please/flags_spec.rb](spec/check_please/flags_spec.rb) for the
+word "surprising" for details.)_
+
+### Expanded Documentation for Specific Flags
+
+#### Flag: `match_by_key`
+
+> **I know this looks like a LOT of information, but it's really not that
+> bad!**  This feature just requires specific examples to describe, and talking
+> about it in English (rather than code) is hard.  Take a moment for some deep
+> breaths if you need it.  :)
+
+> _If you're comfortable reading RSpec and/or want to check out all the edge
+> cases, go look in `./spec/check_please/comparison_spec.rb` and check out the
+> `describe` block labeled `"comparing arrays by keys"`._
+
+The `match_by_key` flag allows you to match up arrays of hashes using the value
+of a single key that is treated as the identifier for each hash.
+
+There's a lot going on in that sentence, so let's unpack it a bit.
+
+Imagine you're comparing two documents that contain the same data, but in
+different orders.  To use a contrived example, let's say that both documents
+consist of a single array of two simple hashes, but the reference array and the
+candidate array are reversed:
+
+```ruby
+# REFERENCE
+[ { "id" => 1, "foo" => "bar" },  { "id" => 2, "foo" => "spam" } ]
+
+# CANDIDATE
+[ { "id" => 2, "foo" => "spam" }, { "id" => 1, "foo" => "bar" }  ]
+```
+
+By default, CheckPlease will match up array elements by their position in the
+array, resulting in a diff report like this:
+
+```
+TYPE     | PATH   | REFERENCE | CANDIDATE
+---------|--------|-----------|----------
+mismatch | /1/id  | 1         | 2
+mismatch | /1/foo | "bar"     | "bat"
+mismatch | /2/id  | 2         | 1
+mismatch | /2/foo | "bat"     | "bar"
+```
+
+To solve this problem, CheckPlease adds a **key expression** to its (very
+simple) path syntax that lets you specify a **key** to use to match up elements
+in both lists, rather than simply comparing elements by position.
+
+Continuing with the above example, if we give `match_by_key` a value of
+`["/:id"]`, it will use the "id" value in both hashes (remember, A's `id` is
+`1` and B's `id` is `2`) to identify every element in both the reference array
+and the candidate array, and correctly match A and B, giving you an empty list
+of diffs.
+
+Please note that the CLI and Ruby implementations of these are a bit different
+(see "Setting Flags in the CLI" versus "Setting Flags in Ruby"), so if you're
+doing this from the command line, it'll look like: `--match-by-key /:id`
+
+Here, have another example.  If you want to specify a match_by_key expression
+below the root of the document, you can put the **key expression** further down
+the path: `/books/:isbn`
+
+This would correctly match up the following documents:
+
+```ruby
+# REFERENCE
+{
+  "books" => [
+    { "isbn" => "12345", "title" => "Who Am I, Really?" },
+    { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+  ]
+}
+
+# CANDIDATE
+{
+  "books" => [
+    { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+    { "isbn" => "12345", "title" => "Who Am I, Really?" },
+  ]
+}
+```
+
+Finally, if you have deeply nested data with arrays of hashes at multiple
+levels, you can specify more than one **key expression** in a single path,
+like: `/authors/:id/books/:isbn`
+
+This would correctly match up the following documents:
+
+```ruby
+# REFERENCE
+{
+  "authors" => [
+    {
+      "id"    => 1,
+      "name"  => "Anne Onymous",
+      "books" => [
+        { "isbn" => "12345", "title" => "Who Am I, Really?" },
+        { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+      ]
+    },
+  ]
+}
+
+# CANDIDATE
+{
+  "authors" => [
+    {
+      "id"    => 1,
+      "name"  => "Anne Onymous",
+      "books" => [
+        { "isbn" => "67890", "title" => "Who Are Any Of Us, Really?" },
+        { "isbn" => "12345", "title" => "Who Am I, Really?" },
+      ]
+    },
+  ]
+}
+```
+
+Finally, if there are any diffs to report, CheckPlease uses a **key/value
+expression** to report mismatches.
+
+Using the last example above (the one with `/authors/:id/books/:isbn`), if the
+reference had Anne Onymous' book title as "Who Am I, Really?" and the candidate
+listed it as "Who The Heck Am I?", CheckPlease would show the mismatch using
+the following path expression: `/authors/id=1/books/isbn=12345`
+
+**This syntax is intended to be readable by humans first.**  If you need to
+build tooling that consumes it... well, I'm open to suggestions.  :)
+
+-----
+
+# TODO (maybe)
 
 * document flags for rspec matcher
 * command line flags for :allthethings:!
@@ -192,7 +448,9 @@ print diffs as JSON to facilitate parsing.  In Ruby, pass `format: :json` to
   * but this may not actually be worth the time and complexity to implement, so
     think about this first...
 
-## Development
+-----
+
+# Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `rake spec` to run the tests. You can also run `bin/console` for an interactive
@@ -204,22 +462,21 @@ release a new version, update the version number in `version.rb`, and then run
 git commits and tags, and push the `.gem` file to
 [rubygems.org](https://rubygems.org).
 
-## Contributing
+# Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/[USERNAME]/check_please. This project is intended to be a
+https://github.com/RealGeeks/check_please. This project is intended to be a
 safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
-conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/RealGeeks/check_please/blob/master/CODE_OF_CONDUCT.md).
 
-
-## License
+# License
 
 The gem is available as open source under the terms of the [MIT
 License](https://opensource.org/licenses/MIT).
 
-## Code of Conduct
+# Code of Conduct
 
 Everyone interacting in the CheckPlease project's codebases, issue trackers,
 chat rooms and mailing lists is expected to follow the [code of
-conduct](https://github.com/[USERNAME]/check_please/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/RealGeeks/check_please/blob/master/CODE_OF_CONDUCT.md).

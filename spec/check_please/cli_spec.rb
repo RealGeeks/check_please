@@ -38,6 +38,16 @@ RSpec.describe CheckPlease::CLI do
         expect( flags.max_depth ).to eq( 2 )
       end
 
+      it "recognizes '--match-by-key' as adding a path/key expression" do
+        flags = invoke!(%w[ --match-by-key /foo/:id ])
+        expect( flags.match_by_key ).to eq( [ "/foo/:id" ] )
+      end
+
+      it "recognizes '--match-by-key' as adding more than one path/key expression" do
+        flags = invoke!(%w[ --match-by-key /foo/:id --match-by-key /bar/:id ])
+        expect( flags.match_by_key ).to eq( [ "/foo/:id", "/bar/:id" ] )
+      end
+
       it "complains if given an arg it doesn't recognize" do
         expect { invoke!(%w[ --welcome-to-zombocom ]) }.to \
           raise_error( CheckPlease::InvalidFlag )

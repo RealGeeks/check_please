@@ -1,123 +1,165 @@
 RSpec.describe CheckPlease::Flags do
-  def flags(attrs = {})
-    described_class.new(attrs)
-  end
-
   describe "#format" do
     it "defaults to CheckPlease::Printers::DEFAULT_FORMAT" do
+      flags = flagify()
       expect( flags.format ).to eq( CheckPlease::Printers::DEFAULT_FORMAT )
     end
 
     it "can be set to :json at initialization time" do
-      expect( flags(format: :json).format ).to eq( :json )
+      flags = flagify(format: :json)
+      expect( flags.format ).to eq( :json )
     end
 
     it "can't be set to just anything" do
-      expect { flags(format: :wibble) }.to raise_error( CheckPlease::InvalidFlag )
+      expect { flagify(format: :wibble) }.to \
+        raise_error( CheckPlease::InvalidFlag )
     end
   end
 
   describe "#max_diffs" do
     it "defaults to nil" do
+      flags = flagify()
       expect( flags.max_diffs ).to be nil
     end
 
     it "can be set to an integer larger than zero at initialization time" do
-      expect( flags(max_diffs: 1).max_diffs ).to eq( 1 )
+      flags = flagify(max_diffs: 1)
+      expect( flags.max_diffs ).to eq( 1 )
     end
 
     it "can't be set to zero" do
-      expect { flags(max_diffs: 0) }.to raise_error( CheckPlease::InvalidFlag )
+      expect { flagify(max_diffs: 0) }.to \
+        raise_error( CheckPlease::InvalidFlag )
     end
 
     it "can't be set to a negative integer" do
-      expect { flags(max_diffs: -1) }.to raise_error( CheckPlease::InvalidFlag )
+      expect { flagify(max_diffs: -1) }.to \
+        raise_error( CheckPlease::InvalidFlag )
     end
 
     it "coerces a string value to an integer" do
-      expect( flags(max_diffs: "42").max_diffs ).to eq( 42 )
+      flags = flagify(max_diffs: "42")
+      expect( flags.max_diffs ).to eq( 42 )
     end
   end
 
   describe "#fail_fast" do
     it "defaults to false" do
+      flags = flagify#####
       expect( flags.fail_fast ).to be false
     end
 
     it "can be set to true at initialization time" do
-      expect( flags( fail_fast: true ).fail_fast ).to be true
+      flags = flagify( fail_fast: true )
+      expect( flags.fail_fast ).to be true
     end
 
-    it "coerces its value to a boolean" do
-      expect( flags( fail_fast: false ).fail_fast ).to be false
-      expect( flags( fail_fast: nil   ).fail_fast ).to be false
+    def self.it_coerces(value, to:)
+      expected_value = to
+      it "coerces #{value.inspect} to #{to.inspect}" do
+        flags = flagify( fail_fast: value )
 
-      expect( flags( fail_fast: true   ).fail_fast ).to be true
-      expect( flags( fail_fast: 0      ).fail_fast ).to be true
-      expect( flags( fail_fast: 1      ).fail_fast ).to be true
-      expect( flags( fail_fast: ""     ).fail_fast ).to be true
-      expect( flags( fail_fast: "yarp" ).fail_fast ).to be true
+        actual = flags.fail_fast # <-- where the magic happens
+
+        expect( actual ).to be( expected_value )
+      end
     end
+
+    it_coerces false, to: false
+    it_coerces nil,   to: false
+
+    it_coerces true,    to: true
+    it_coerces 0,       to: true
+    it_coerces 1,       to: true
+    it_coerces "",      to: true
+    it_coerces "yarp" , to: true
   end
 
   describe "#max_depth" do
     it "defaults to nil" do
+      flags = flagify()
       expect( flags.max_depth ).to be nil
     end
 
     it "can be set to an integer larger than zero at initialization time" do
-      expect( flags(max_depth: 1).max_depth ).to eq( 1 )
+      flags = flagify(max_depth: 1)
+      expect( flags.max_depth ).to eq( 1 )
     end
 
     it "can't be set to zero" do
-      expect { flags(max_depth: 0) }.to raise_error( CheckPlease::InvalidFlag )
+      expect { flagify(max_depth: 0) }.to \
+        raise_error( CheckPlease::InvalidFlag )
     end
 
     it "can't be set to a negative integer" do
-      expect { flags(max_depth: -1) }.to raise_error( CheckPlease::InvalidFlag )
+      expect { flagify(max_depth: -1) }.to \
+        raise_error( CheckPlease::InvalidFlag )
     end
 
     it "coerces a string value to an integer" do
-      expect( flags(max_depth: "42").max_depth ).to eq( 42 )
+      flags = flagify(max_depth: "42")
+      expect( flags.max_depth ).to eq( 42 )
     end
   end
 
   describe "select_paths" do
     it "defaults to an empty array" do
+      flags = flagify()
       expect( flags.select_paths ).to eq( [] )
     end
 
     spec_body = ->(_example) {
-      f = flags
-      f.select_paths = "/foo"
-      expect( f.select_paths ).to eq( [ "/foo" ] )
-      f.select_paths = "/bar"
-      expect( f.select_paths ).to eq( [ "/foo", "/bar" ] )
+      flags = flagify()
+      flags.select_paths = "/foo"
+      expect( flags.select_paths ).to eq( pathify([ "/foo" ]) )
+      flags.select_paths = "/bar"
+      expect( flags.select_paths ).to eq( pathify([ "/foo", "/bar" ]) )
     }
 
-    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
 
   describe "reject_paths" do
     it "defaults to an empty array" do
+      flags = flagify()
       expect( flags.reject_paths ).to eq( [] )
     end
 
     spec_body = ->(_example) {
-      f = flags
-      f.reject_paths = "/foo"
-      expect( f.reject_paths ).to eq( [ "/foo" ] )
-      f.reject_paths = "/bar"
-      expect( f.reject_paths ).to eq( [ "/foo", "/bar" ] )
+      flags = flagify()
+      flags.reject_paths = "/foo"
+      expect( flags.reject_paths ).to eq( pathify([ "/foo" ]) )
+      flags.reject_paths = "/bar"
+      expect( flags.reject_paths ).to eq( pathify([ "/foo", "/bar" ]) )
     }
 
-    specify "the setter is a little surprising: it appends any values it's given to a list", &spec_body
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
 
   specify "select_paths and reject_paths can't both be set" do
-    expect { flags(select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
+    expect { flagify(select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
       raise_error( CheckPlease::InvalidFlag )
+  end
+
+  describe "match_by_key" do
+    it "defaults to an empty array" do
+      flags = flagify()
+      expect( flags.match_by_key ).to eq( [] )
+    end
+
+    spec_body = ->(_example) {
+      flags = flagify()
+      flags.match_by_key = "/:id"
+      expect( flags.match_by_key ).to eq( pathify([ "/:id" ]) )
+      flags.match_by_key = "/foo/:id"
+      expect( flags.match_by_key ).to eq( pathify([ "/:id", "/foo/:id" ]) )
+      flags.match_by_key = "/bar/:id"
+      expect( flags.match_by_key ).to eq( pathify([ "/:id", "/foo/:id", "/bar/:id" ]) )
+    }
+
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
+    specify "the list doesn't persist between instances", &spec_body
   end
 end

@@ -1,7 +1,7 @@
 require 'check_please'
 
-reference = { foo: "wibble" }
-candidate = { bar: "wibble" }
+reference = { "foo" => "wibble" }
+candidate = { "bar" => "wibble" }
 
 
 
@@ -28,3 +28,9 @@ diffs = CheckPlease.diff(reference, candidate)
 #
 # If you come up with a useful way to present these, feel free to submit a PR
 # with a new class in `lib/check_please/printers` !
+
+# To print these in the console, you can just do:
+puts diffs
+
+# If for some reason you want to print the JSON version, it gets a little more verbose:
+puts diffs.to_s(format: :json)

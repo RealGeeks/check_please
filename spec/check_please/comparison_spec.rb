@@ -76,14 +76,26 @@ RSpec.describe CheckPlease::Comparison do
 
   context "when given two hashes of arrays" do
     context "top-level hash keys differ" do
-      let(:reference) { { foo: [ 1, 2, 3 ], bar: [ 2, 3, 4 ] } }
-      let(:candidate) { { foo: [ 1, 2, 3 ], yak: [ 2, 3, 5 ] } }
+      let(:reference) { { foo: [ 1, 2, 3 ], bar: [ 4, 5, 6 ] } }
+      let(:candidate) { { foo: [ 1, 2, 3 ], yak: [ 7, 8, 9 ] } }
 
       it "has two diffs: one missing, one extra" do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 2 )
-        expect( diffs["/bar"] ).to eq_diff( :missing, "/bar", ref: [2,3,4], can: nil )
-        expect( diffs["/yak"] ).to eq_diff( :extra,   "/yak", ref: nil,     can: [2,3,5] )
+        expect( diffs["/bar"] ).to eq_diff( :missing, "/bar", ref: [4,5,6], can: nil )
+        expect( diffs["/yak"] ).to eq_diff( :extra,   "/yak", ref: nil,     can: [7,8,9] )
+      end
+    end
+
+    context "top-level hash keys differ but the arrays are the same" do
+      let(:reference) { { foo: [ 1, 2, 3 ], bar: [ 4, 5, 6 ] } }
+      let(:candidate) { { foo: [ 1, 2, 3 ], yak: [ 4, 5, 6 ] } }
+
+      it "has two diffs: one missing, one extra" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 2 )
+        expect( diffs["/bar"] ).to eq_diff( :missing, "/bar", ref: [4,5,6], can: nil )
+        expect( diffs["/yak"] ).to eq_diff( :extra,   "/yak", ref: nil,     can: [4,5,6] )
       end
     end
 
@@ -147,6 +159,180 @@ RSpec.describe CheckPlease::Comparison do
     end
   end
 
+  describe "comparing arrays by keys" do
+    shared_examples "compare_arrays_by_key" do
+      specify "comparing [A,B] with [B,A] with no match_by_key expressions complains a lot" do
+        ref = [ a, b ]
+        can = [ b, a ]
+        diffs = invoke!( ref, can, match_by_key: [] ) # note empty list
+        expect( diffs.length ).to eq( 4 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1/id",  ref: a["id"],  can: b["id"] )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/1/foo", ref: a["foo"], can: b["foo"] )
+        expect( diffs[2] ).to eq_diff( :mismatch, "/2/id",  ref: b["id"],  can: a["id"] )
+        expect( diffs[3] ).to eq_diff( :mismatch, "/2/foo", ref: b["foo"], can: a["foo"] )
+        #                                                        ^              ^
+      end
+
+      specify "comparing [A,B] with [B,A] correctly matches up A and B using the :id value, resulting in zero diffs" do
+        ref = [ a, b ]
+        can = [ b, a ]
+        diffs = invoke!( ref, can, match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 0 )
+      end
+
+      specify "comparing [A,B] with [A] complains that B is missing" do
+        ref = [ a, b ]
+        can = [ a ]
+        diffs = invoke!( ref, can, match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/id=#{b[b_key_name]}", ref: b, can: nil )
+      end
+
+      specify "comparing [A,B] with [B] complains that A is missing" do
+        ref = [ a, b ]
+        can = [ b ]
+        diffs = invoke!( ref, can, match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/id=#{a[a_key_name]}", ref: a, can: nil )
+      end
+
+      specify "comparing [A] with [A,B] complains that B is extra" do
+        ref = [ a ]
+        can = [ a, b ]
+        diffs = invoke!( ref, can, match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/id=#{b[b_key_name]}", ref: nil, can: b )
+      end
+
+      specify "comparing [B] with [A,B] complains that B is extra" do
+        ref = [ b ]
+        can = [ a, b ]
+        diffs = invoke!( ref, can, match_by_key: [ "/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/id=#{a[a_key_name]}", ref: nil, can: a )
+      end
+
+      specify "comparing two lists where the top-level elements can be matched by key but have different child values... works (explicit keys for both levels)" do
+        ref = [ { "id" => 1, "deeply" => { "nested" => [ a, b ] } } ]
+        can = [ { "id" => 1, "deeply" => { "nested" => [ c, a ] } } ]
+
+        diffs = invoke!( ref, can, match_by_key: [ "/:id", "/:id/deeply/nested/:id" ] )
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
+      end
+
+      specify "comparing two lists where the top-level elements can be matched by key but have different child values... works (implicit key for top level)" do
+        ref = [ { "id" => 1, "deeply" => { "nested" => [ a, b ] } } ]
+        can = [ { "id" => 1, "deeply" => { "nested" => [ c, a ] } } ]
+
+        diffs = invoke!( ref, can, match_by_key: [         "/:id/deeply/nested/:id" ] )
+        #                                          ^^^^^^^ no "/:id" here
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/id=1/deeply/nested/id=2/foo", ref: "bat", can: "yak" )
+      end
+
+      specify "comparing [A,B] with [B,A] raises NoSuchKeyError if given a bogus key expression" do
+        ref = [ a, b ]
+        can = [ b, a ]
+        expect { invoke!( ref, can, match_by_key: [ "/:identifier" ] ) }.to \
+          raise_error(CheckPlease::NoSuchKeyError, /The reference hash at position 0 has no "identifier" key/)
+      end
+
+      specify "comparing [A,A] with [A] raises DuplicateKeyError" do
+        ref = [ a, a ]
+        can = [ a ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate reference element found/)
+      end
+
+      specify "comparing [A,A] with [A,A] raises DuplicateKeyError" do
+        ref = [ a, a ]
+        can = [ a, a ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate reference element found/)
+      end
+
+      specify "comparing [A] with [A,A] raises DuplicateKeyError" do
+        ref = [ a ]
+        can = [ a, a ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate candidate element found/)
+      end
+
+      specify "comparing [A] with [A,A,B] raises DuplicateKeyError" do
+        ref = [ a ]
+        can = [ a, a, b ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::DuplicateKeyError, /Duplicate candidate element found/)
+      end
+
+      specify "comparing [42] with [A] raises TypeMismatchError" do
+        ref = [ 42 ]
+        can = [ a ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::TypeMismatchError, /The element at position \d+ in the reference array is not a hash/)
+      end
+
+      specify "comparing [A] with [42] raises TypeMismatchError" do
+        ref = [ a ]
+        can = [ 42 ]
+        expect { invoke!( ref, can, match_by_key: [ "/:id" ] ) }.to \
+          raise_error(CheckPlease::TypeMismatchError, /The element at position \d+ in the candidate array is not a hash/)
+      end
+    end
+
+    context "when both ref and can use strings for keys" do
+      let(:a) { { "id" => 1, "foo" => "bar" } }
+      let(:b) { { "id" => 2, "foo" => "bat" } }
+      let(:c) { { "id" => 2, "foo" => "yak" } }
+      let(:a_key_name) { "id" }
+      let(:b_key_name) { "id" }
+
+      include_examples "compare_arrays_by_key"
+    end
+
+    ###############################################
+    ##                                           ##
+    ##  ########   #####    ######      #####    ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##    ##     ##  ##    ##  ##     ##  ##
+    ##     ##     ##   ##   ##   ##    ##   ##   ##
+    ##     ##      #####    ######      #####    ##
+    ##                                           ##
+    ###############################################
+    # TODO: decide how to handle non-string keys. Symbols? Integers? E_CAN_OF_WORMS
+    ###############################################
+
+    # context "when ref keys are symbols and can keys are strings" do
+    #   let(:a) { { :id  => 1, :foo  => "bar" } }
+    #   let(:b) { { "id" => 2, "foo" => "bat" } }
+    #   let(:a_key_name) { :id }
+    #   let(:b_key_name) { "id" }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+
+    # context "when ref keys are strings and can keys are symbols" do
+    #   let(:a) { { "id" => 1, "foo" => "bar" } }
+    #   let(:b) { { :id  => 2, :foo  => "bat" } }
+    #   let(:a_key_name) { "id" }
+    #   let(:b_key_name) { :id }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+
+    # context "when both ref and can use symbols for keys" do
+    #   let(:a) { { :id => 1, :foo => "bar" } }
+    #   let(:b) { { :id => 2, :foo => "bat" } }
+    #   let(:a_key_name) { :id }
+    #   let(:b_key_name) { :id }
+    #
+    #   include_examples "compare_arrays_by_key"
+    # end
+  end
+
   context "when given an Array :reference and an Integer :candidate" do
     let(:reference) { [ 42 ] }
     let(:candidate) { 42 }
@@ -182,29 +368,34 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs[3] ).to eq_diff( :mismatch, "/b/d/f/g", ref: 7, can: 8 )
     end
 
-    it "only has the first diff when passed a max_depth of 1" do
+    it "has no diffs when passed a max_depth of 1" do
       diffs = invoke!(reference, candidate, max_depth: 1)
+      expect( diffs.length ).to eq( 0 )
+    end
+
+    it "only has the first diff when passed a max_depth of 2" do
+      diffs = invoke!(reference, candidate, max_depth: 2)
       expect( diffs.length ).to eq( 1 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a", ref: 1, can: 2 )
     end
 
-    it "only has the first two diffs when passed a max_depth of 2" do
-      diffs = invoke!(reference, candidate, max_depth: 2)
+    it "only has the first two diffs when passed a max_depth of 3" do
+      diffs = invoke!(reference, candidate, max_depth: 3)
       expect( diffs.length ).to eq( 2 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",   ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c", ref: 3, can: 4 )
     end
 
-    it "only has the first three diffs when passed a max_depth of 3" do
-      diffs = invoke!(reference, candidate, max_depth: 3)
+    it "only has the first three diffs when passed a max_depth of 4" do
+      diffs = invoke!(reference, candidate, max_depth: 4)
       expect( diffs.length ).to eq( 3 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",     ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",   ref: 3, can: 4 )
       expect( diffs[2] ).to eq_diff( :mismatch, "/b/d/e", ref: 5, can: 6 )
     end
 
-    it "has all four diffs when passed a max_depth of 4" do
-      diffs = invoke!(reference, candidate, max_depth: 4)
+    it "has all four diffs when passed a max_depth of 5" do
+      diffs = invoke!(reference, candidate, max_depth: 5)
       expect( diffs.length ).to eq( 4 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/a",       ref: 1, can: 2 )
       expect( diffs[1] ).to eq_diff( :mismatch, "/b/c",     ref: 3, can: 4 )
