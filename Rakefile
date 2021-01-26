@@ -59,6 +59,10 @@ task :toc do
   end
 end
 
-# By making TOC generation a prerequisite of release, we *should* at least be
-# forced to update the TOC whenever we publish a new version of the gem...
-task :release => :toc
+# Okay, so.  We want the TOC to be up to date *before* the `release` task runs.
+#
+# We tried making the 'toc' task a dependency of 'release', but that just adds
+# it to the end of the dependencies, and generates the TOC after publishing.
+#
+# Trying the 'build' task instead...
+task :build => :toc

@@ -19,7 +19,7 @@ structures parsed from either of those.
       * [Flags](#flags)
          * [Setting Flags in the CLI](#setting-flags-in-the-cli)
          * [Setting Flags in Ruby](#setting-flags-in-ruby)
-         * ["Reentrant" Flags](#reentrant-flags)
+         * [Repeatable Flags](#repeatable-flags)
          * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
             * [Flag: match_by_key](#flag-match_by_key)
    * [TODO (maybe)](#todo-maybe)
