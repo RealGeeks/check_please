@@ -22,7 +22,7 @@ module CheckPlease
     def compare(ref, can, path)
       return if path.excluded?(flags)
 
-      case types(ref, can)
+      case types_for_compare(ref, can)
       when [ :array, :array ] ; compare_arrays ref, can, path
       when [ :hash,  :hash  ] ; compare_hashes ref, can, path
       when [ :other, :other ] ; compare_others ref, can, path
@@ -31,7 +31,7 @@ module CheckPlease
       end
     end
 
-      def types(*list)
+      def types_for_compare(*list)
         list.map { |e|
           case e
           when Array ; :array
