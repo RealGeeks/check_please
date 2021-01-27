@@ -143,4 +143,24 @@ module CheckPlease
     EOF
   end
 
+  Flags.define :indifferent_keys do |flag|
+    flag.default = false
+    flag.coerce { |value| !!value }
+
+    flag.cli_long = "--indifferent-keys"
+    flag.description = <<~EOF
+      When comparing hashes, convert symbol keys to strings
+    EOF
+  end
+
+  Flags.define :indifferent_values do |flag|
+    flag.default = false
+    flag.coerce { |value| !!value }
+
+    flag.cli_long = "--indifferent-values"
+    flag.description = <<~EOF
+      When comparing values (that aren't arrays or hashes), convert symbols to strings
+    EOF
+  end
+
 end

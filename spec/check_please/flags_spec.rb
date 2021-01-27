@@ -162,4 +162,69 @@ RSpec.describe CheckPlease::Flags do
     specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
     specify "the list doesn't persist between instances", &spec_body
   end
+
+  describe "#indifferent_keys" do
+    it "defaults to false" do
+      flags = flagify#####
+      expect( flags.indifferent_keys ).to be false
+    end
+
+    it "can be set to true at initialization time" do
+      flags = flagify( indifferent_keys: true )
+      expect( flags.indifferent_keys ).to be true
+    end
+
+    def self.it_coerces(value, to:)
+      expected_value = to
+      it "coerces #{value.inspect} to #{to.inspect}" do
+        flags = flagify( indifferent_keys: value )
+
+        actual = flags.indifferent_keys # <-- where the magic happens
+
+        expect( actual ).to be( expected_value )
+      end
+    end
+
+    it_coerces false, to: false
+    it_coerces nil,   to: false
+
+    it_coerces true,    to: true
+    it_coerces 0,       to: true
+    it_coerces 1,       to: true
+    it_coerces "",      to: true
+    it_coerces "yarp" , to: true
+  end
+
+  describe "#indifferent_values" do
+    it "defaults to false" do
+      flags = flagify#####
+      expect( flags.indifferent_values ).to be false
+    end
+
+    it "can be set to true at initialization time" do
+      flags = flagify( indifferent_values: true )
+      expect( flags.indifferent_values ).to be true
+    end
+
+    def self.it_coerces(value, to:)
+      expected_value = to
+      it "coerces #{value.inspect} to #{to.inspect}" do
+        flags = flagify( indifferent_values: value )
+
+        actual = flags.indifferent_values # <-- where the magic happens
+
+        expect( actual ).to be( expected_value )
+      end
+    end
+
+    it_coerces false, to: false
+    it_coerces nil,   to: false
+
+    it_coerces true,    to: true
+    it_coerces 0,       to: true
+    it_coerces 1,       to: true
+    it_coerces "",      to: true
+    it_coerces "yarp" , to: true
+  end
+
 end
