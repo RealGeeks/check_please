@@ -1,4 +1,38 @@
 RSpec.describe CheckPlease::Flags do
+  shared_examples "a boolean flag" do
+    it "defaults to false" do
+      flags = flagify()
+      expect( flags.send(flag_name) ).to be false
+    end
+
+    it "can be set to true at initialization time" do
+      flags = flagify( flag_name => true )
+      expect( flags.send(flag_name) ).to be true
+    end
+
+    def self.it_coerces(value, to:)
+      expected_value = to
+      it "coerces #{value.inspect} to #{to.inspect}" do
+        flags = flagify( flag_name => value )
+
+        actual = flags.send(flag_name) # <-- where the magic happens
+
+        expect( actual ).to be( expected_value )
+      end
+    end
+
+    it_coerces false, to: false
+    it_coerces nil,   to: false
+
+    it_coerces true,    to: true
+    it_coerces 0,       to: true
+    it_coerces 1,       to: true
+    it_coerces "",      to: true
+    it_coerces "yarp" , to: true
+  end
+
+
+
   describe "#format" do
     it "defaults to CheckPlease::Printers::DEFAULT_FORMAT" do
       flags = flagify()
@@ -44,35 +78,9 @@ RSpec.describe CheckPlease::Flags do
   end
 
   describe "#fail_fast" do
-    it "defaults to false" do
-      flags = flagify#####
-      expect( flags.fail_fast ).to be false
+    it_behaves_like "a boolean flag" do
+      let(:flag_name) { :fail_fast }
     end
-
-    it "can be set to true at initialization time" do
-      flags = flagify( fail_fast: true )
-      expect( flags.fail_fast ).to be true
-    end
-
-    def self.it_coerces(value, to:)
-      expected_value = to
-      it "coerces #{value.inspect} to #{to.inspect}" do
-        flags = flagify( fail_fast: value )
-
-        actual = flags.fail_fast # <-- where the magic happens
-
-        expect( actual ).to be( expected_value )
-      end
-    end
-
-    it_coerces false, to: false
-    it_coerces nil,   to: false
-
-    it_coerces true,    to: true
-    it_coerces 0,       to: true
-    it_coerces 1,       to: true
-    it_coerces "",      to: true
-    it_coerces "yarp" , to: true
   end
 
   describe "#max_depth" do
@@ -164,67 +172,15 @@ RSpec.describe CheckPlease::Flags do
   end
 
   describe "#indifferent_keys" do
-    it "defaults to false" do
-      flags = flagify#####
-      expect( flags.indifferent_keys ).to be false
+    it_behaves_like "a boolean flag" do
+      let(:flag_name) { :indifferent_keys }
     end
-
-    it "can be set to true at initialization time" do
-      flags = flagify( indifferent_keys: true )
-      expect( flags.indifferent_keys ).to be true
-    end
-
-    def self.it_coerces(value, to:)
-      expected_value = to
-      it "coerces #{value.inspect} to #{to.inspect}" do
-        flags = flagify( indifferent_keys: value )
-
-        actual = flags.indifferent_keys # <-- where the magic happens
-
-        expect( actual ).to be( expected_value )
-      end
-    end
-
-    it_coerces false, to: false
-    it_coerces nil,   to: false
-
-    it_coerces true,    to: true
-    it_coerces 0,       to: true
-    it_coerces 1,       to: true
-    it_coerces "",      to: true
-    it_coerces "yarp" , to: true
   end
 
   describe "#indifferent_values" do
-    it "defaults to false" do
-      flags = flagify#####
-      expect( flags.indifferent_values ).to be false
+    it_behaves_like "a boolean flag" do
+      let(:flag_name) { :indifferent_values }
     end
-
-    it "can be set to true at initialization time" do
-      flags = flagify( indifferent_values: true )
-      expect( flags.indifferent_values ).to be true
-    end
-
-    def self.it_coerces(value, to:)
-      expected_value = to
-      it "coerces #{value.inspect} to #{to.inspect}" do
-        flags = flagify( indifferent_values: value )
-
-        actual = flags.indifferent_values # <-- where the magic happens
-
-        expect( actual ).to be( expected_value )
-      end
-    end
-
-    it_coerces false, to: false
-    it_coerces nil,   to: false
-
-    it_coerces true,    to: true
-    it_coerces 0,       to: true
-    it_coerces 1,       to: true
-    it_coerces "",      to: true
-    it_coerces "yarp" , to: true
   end
 
 end
