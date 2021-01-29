@@ -3,7 +3,7 @@ RSpec.describe CheckPlease::Comparison do
     CheckPlease::Comparison.perform(ref, can, flags)
   end
 
-  context "when given two scalars" do
+  context "when given two integers" do
     let(:reference) { 42 }
     let(:candidate) { 43 }
 
@@ -11,6 +11,38 @@ RSpec.describe CheckPlease::Comparison do
       diffs = invoke!(reference, candidate)
       expect( diffs.length ).to eq( 1 )
       expect( diffs[0] ).to eq_diff( :mismatch, "/", ref: 42, can: 43 )
+    end
+  end
+
+  context "when given a String and a Symbol" do
+    let(:reference) { "foo" }
+    let(:candidate) { :foo }
+
+    specify "by default, it has one diff for the mismatch" do
+      diffs = invoke!(reference, candidate)
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/", ref: "foo", can: :foo )
+    end
+
+    specify "it has no diffs when the `indifferent_values` flag is true" do
+      diffs = invoke!(reference, candidate, indifferent_values: true)
+      expect( diffs ).to be_empty
+    end
+  end
+
+  context "when given a Symbol and a String" do
+    let(:reference) { :foo }
+    let(:candidate) { "foo" }
+
+    specify "by default, it has one diff for the mismatch" do
+      diffs = invoke!(reference, candidate)
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/", ref: :foo, can: "foo" )
+    end
+
+    specify "it has no diffs when the `indifferent_values` flag is true" do
+      diffs = invoke!(reference, candidate, indifferent_values: true)
+      expect( diffs ).to be_empty
     end
   end
 
@@ -49,7 +81,7 @@ RSpec.describe CheckPlease::Comparison do
     end
   end
 
-  context "when given two hashes of scalars" do
+  context "when given two hashes of integers" do
     context "same length, one key mismatch" do
       let(:reference) { { foo: 1, bar: 2, yak:  3 } }
       let(:candidate) { { foo: 1, bar: 2, quux: 3 } }
@@ -70,6 +102,66 @@ RSpec.describe CheckPlease::Comparison do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
         expect( diffs[0] ).to eq_diff( :mismatch, "/yak", ref: 3, can: 5 )
+      end
+    end
+  end
+
+  context "when given a reference hash with String keys and a candidate hash with Symbol keys" do
+    context "same length, one key name mismatch" do
+      let(:reference) { { "foo" => 1, "bar" => 2, "yak" => 3 } }
+      let(:candidate) { { :foo  => 1, :bar  => 2, :quux => 3 } }
+
+      context "by default" do
+        it "has six diffs" do
+          diffs = invoke!(reference, candidate)
+          expect( diffs.length ).to eq( 6 )
+
+          expect( diffs[0] ).to eq_diff( :missing, "/foo",  ref: 1,   can: nil )
+          expect( diffs[1] ).to eq_diff( :missing, "/bar",  ref: 2,   can: nil )
+          expect( diffs[2] ).to eq_diff( :missing, "/yak",  ref: 3,   can: nil )
+          expect( diffs[3] ).to eq_diff( :extra,   "/foo",  ref: nil, can: 1 )
+          expect( diffs[4] ).to eq_diff( :extra,   "/bar",  ref: nil, can: 2 )
+          expect( diffs[5] ).to eq_diff( :extra,   "/quux", ref: nil, can: 3 )
+        end
+      end
+
+      context "when the indifferent_keys flag is true" do
+        it "has two diffs: one missing, one extra" do
+          diffs = invoke!(reference, candidate, indifferent_keys: true)
+          expect( diffs.length ).to eq( 2 )
+          expect( diffs[0] ).to eq_diff( :missing, "/yak",  ref: 3,   can: nil )
+          expect( diffs[1] ).to eq_diff( :extra,   "/quux", ref: nil, can: 3 )
+        end
+      end
+    end
+  end
+
+  context "when given a reference hash with Symbol keys and a candidate hash with String keys" do
+    context "same length, one key name mismatch" do
+      let(:reference) { { :foo  => 1, :bar  => 2, :yak   => 3 } }
+      let(:candidate) { { "foo" => 1, "bar" => 2, "quux" => 3 } }
+
+      context "by default" do
+        it "has six diffs" do
+          diffs = invoke!(reference, candidate)
+          expect( diffs.length ).to eq( 6 )
+
+          expect( diffs[0] ).to eq_diff( :missing, "/foo",  ref: 1,   can: nil )
+          expect( diffs[1] ).to eq_diff( :missing, "/bar",  ref: 2,   can: nil )
+          expect( diffs[2] ).to eq_diff( :missing, "/yak",  ref: 3,   can: nil )
+          expect( diffs[3] ).to eq_diff( :extra,   "/foo",  ref: nil, can: 1 )
+          expect( diffs[4] ).to eq_diff( :extra,   "/bar",  ref: nil, can: 2 )
+          expect( diffs[5] ).to eq_diff( :extra,   "/quux", ref: nil, can: 3 )
+        end
+      end
+
+      context "when the indifferent_keys flag is true" do
+        it "has two diffs: one missing, one extra" do
+          diffs = invoke!(reference, candidate, indifferent_keys: true)
+          expect( diffs.length ).to eq( 2 )
+          expect( diffs[0] ).to eq_diff( :missing, "/yak",  ref: 3,   can: nil )
+          expect( diffs[1] ).to eq_diff( :extra,   "/quux", ref: nil, can: 3 )
+        end
       end
     end
   end

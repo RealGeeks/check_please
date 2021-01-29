@@ -52,6 +52,7 @@ module CheckPlease
         def compare_arrays_by_key(ref_array, can_array, path, key_name)
           refs_by_key = index_array!(ref_array, path, key_name, "reference")
           cans_by_key = index_array!(can_array, path, key_name, "candidate")
+
           key_values = (refs_by_key.keys | cans_by_key.keys)
 
           key_values.compact! # NOTE: will break if nil is ever used as a key (but WHO WOULD DO THAT?!)
@@ -77,6 +78,10 @@ module CheckPlease
               unless h.is_a?(Hash)
                 raise CheckPlease::TypeMismatchError, \
                   "The element at position #{i} in the #{ref_or_can} array is not a hash."
+              end
+
+              if flags.indifferent_keys
+                h = stringify_symbol_keys(h)
               end
 
               # try to get the value of the attribute identified by key_name
@@ -121,10 +126,26 @@ module CheckPlease
         end
 
       def compare_hashes(ref_hash, can_hash, path)
+        if flags.indifferent_keys
+          ref_hash = stringify_symbol_keys(ref_hash)
+          can_hash = stringify_symbol_keys(can_hash)
+        end
         record_missing_keys ref_hash, can_hash, path
         compare_common_keys ref_hash, can_hash, path
         record_extra_keys   ref_hash, can_hash, path
       end
+
+        def stringify_symbol_keys(h)
+          Hash[
+            h.map { |k,v|
+              [ stringify_symbol(k), v ]
+            }
+          ]
+        end
+
+          def stringify_symbol(x)
+            Symbol === x ? x.to_s : x
+          end
 
         def record_missing_keys(ref_hash, can_hash, path)
           keys = ref_hash.keys - can_hash.keys
@@ -148,6 +169,10 @@ module CheckPlease
         end
 
       def compare_others(ref, can, path)
+        if flags.indifferent_values
+          ref = stringify_symbol(ref)
+          can = stringify_symbol(can)
+        end
         return if ref == can
         record_diff ref, can, path, :mismatch
       end
