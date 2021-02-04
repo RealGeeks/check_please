@@ -143,6 +143,20 @@ module CheckPlease
     EOF
   end
 
+  Flags.define :match_by_value do |flag|
+    flag.repeatable
+    flag.coerce { |value| CheckPlease::Path.reify(value) }
+
+    flag.cli_long = "--match-by-value FOO"
+    flag.description = <<~EOF
+      When comparing two arrays that match a specified path, the candidate
+      array will be scanned for each element in the reference array.
+        May be repeated; values will be treated as an 'OR' list.
+        NOTE: explodes if either array at a given path contains other collections.
+        NOTE: paths of 'extra' diffs use the index in the candidate array.
+    EOF
+  end
+
   Flags.define :indifferent_keys do |flag|
     flag.default = false
     flag.coerce { |value| !!value }

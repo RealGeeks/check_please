@@ -6,6 +6,10 @@ module CheckPlease
     # instead....
   end
 
+  class BehaviorUndefined < ::StandardError
+    include CheckPlease::Error
+  end
+
   class DuplicateKeyError < ::IndexError
     include CheckPlease::Error
   end
