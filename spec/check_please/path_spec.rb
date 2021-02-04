@@ -416,13 +416,13 @@ RSpec.describe CheckPlease::Path do
     end
   end
 
-  describe "#key_for_compare (note: MBK=match_by_key)" do
+  describe "#key_to_match_by (note: MBK=match_by_key)" do
     def self.it_returns(expected, for_path:)
       line = caller[0].split(":")[1]
       specify "[line #{line}] returns #{expected.inspect} for path '#{for_path}'" do
         the_path = pathify(for_path)
 
-        actual = the_path.key_for_compare(flags) # <-- where the magic happens
+        actual = the_path.key_to_match_by(flags) # <-- where the magic happens
 
         _compare expected, actual
       end

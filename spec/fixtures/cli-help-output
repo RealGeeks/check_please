@@ -29,5 +29,10 @@ Usage: check_please <reference> <candidate> [FLAGS]
                                        May be repeated; values will be treated as an 'OR' list.
                                        See the README for details on how to actually use this.
                                        NOTE: this does not yet handle non-string keys.
+        --match-by-value FOO         When comparing two arrays that match a specified path, the candidate
+                                     array will be scanned for each element in the reference array.
+                                       May be repeated; values will be treated as an 'OR' list.
+                                       NOTE: explodes if either array at a given path contains other collections.
+                                       NOTE: paths of 'extra' diffs use the index in the candidate array.
         --indifferent-keys           When comparing hashes, convert symbol keys to strings
         --indifferent-values         When comparing values (that aren't arrays or hashes), convert symbols to strings

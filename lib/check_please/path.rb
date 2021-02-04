@@ -81,19 +81,20 @@ module CheckPlease
       "<#{self.class.name} '#{to_s}'>"
     end
 
-		# TODO: Naming Things
-    def key_for_compare(flags)
-      mbk_exprs = unpack_mbk_exprs(flags)
-      matches = mbk_exprs.select { |mbk_expr|
-        # NOTE: matching on parent because MBK '/foo/:id' should return 'id' for path '/foo'
-        mbk_expr.parent.match?(self)
-      }
+    def key_to_match_by(flags)
+      key_exprs = unpack_key_exprs(flags.match_by_key)
+      # NOTE: match on parent because if self.to_s == '/foo', MBK '/foo/:id' should return 'id'
+      matches = key_exprs.select { |e| e.parent.match?(self) }
 
       case matches.length
       when 0 ; nil
       when 1 ; matches.first.segments.last.key
       else   ; raise "More than one match_by_key expression for path '#{self}': #{matches.map(&:to_s).inspect}"
       end
+    end
+
+    def match_by_value?(flags)
+      flags.match_by_value.any? { |e| e.match?(self) }
     end
 
     def match?(path_or_string)
@@ -160,8 +161,8 @@ module CheckPlease
       depth > flags.max_depth
     end
 
-    def unpack_mbk_exprs(flags)
-      flags.match_by_key
+    def unpack_key_exprs(path_list)
+      path_list
         .map { |path| path.send(:key_exprs) }
         .flatten
         .uniq { |e| e.to_s } # use the block form so we don't have to implement #hash and #eql? in horrible ways

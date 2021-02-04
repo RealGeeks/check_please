@@ -42,8 +42,11 @@ module CheckPlease
       end
 
       def compare_arrays(ref_array, can_array, path)
-        if ( key = path.key_for_compare(flags) )
+        case
+        when ( key = path.key_to_match_by(flags) )
           compare_arrays_by_key ref_array, can_array, path, key
+        when path.match_by_value?(flags)
+          compare_arrays_by_value ref_array, can_array, path
         else
           compare_arrays_by_index ref_array, can_array, path
         end
@@ -105,6 +108,45 @@ module CheckPlease
             end
 
             elements_by_key
+          end
+
+        # FIXME: this can generate duplicate paths.
+        # Time to introduce lft_path, rgt_path ?
+        def compare_arrays_by_value(ref_array, can_array, path)
+          assert_can_match_by_value! ref_array
+          assert_can_match_by_value! can_array
+
+          matches = can_array.map { false }
+
+          # Look for missing values
+          ref_array.each.with_index do |ref, i|
+            new_path = path + (i+1) # count in human pls
+
+            # Weird, but necessary to handle duplicates properly
+            j = can_array.index.with_index { |can, j|
+              matches[j] == false && can == ref
+            }
+
+            if j
+              matches[j] = true
+            else
+              record_diff ref, nil, new_path, :missing
+            end
+          end
+
+          # Look for extra values
+          can_array.zip(matches).each.with_index do |(can, match), i|
+            next if match
+            new_path = path + (i+1) # count in human pls
+            record_diff nil, can, new_path, :extra
+          end
+        end
+
+          def assert_can_match_by_value!(array)
+            if array.any? { |e| Array === e || Hash === e }
+              raise CheckPlease::BehaviorUndefined,
+                "match_by_value behavior is not defined for collections!"
+            end
           end
 
         def compare_arrays_by_index(ref_array, can_array, path)

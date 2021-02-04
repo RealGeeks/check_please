@@ -47,7 +47,7 @@ RSpec.describe CheckPlease::Comparison do
   end
 
   context "when given two arrays of scalars" do
-    context "same length, different elements" do
+    context "same length, same order, different elements" do
       let(:reference) { [ 1, 2, 3 ] }
       let(:candidate) { [ 1, 2, 5 ] }
 
@@ -58,7 +58,27 @@ RSpec.describe CheckPlease::Comparison do
       end
     end
 
-    context "reference longer than candidate" do
+    context "same length, different order, different elements" do
+      let(:reference) { [ 1, 2, 3 ] }
+      let(:candidate) { [ 5, 1, 2 ] }
+
+      it "has three diffs" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1, can: 5 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/2", ref: 2, can: 1 )
+        expect( diffs[2] ).to eq_diff( :mismatch, "/3", ref: 3, can: 2 )
+      end
+
+      specify "it has two diffs (one missing, one extra) when the `match_by_value` list contains a matching path" do
+        diffs = invoke!(reference, candidate, match_by_value: [ "/" ])
+        expect( diffs.length ).to eq( 2 )
+        expect( diffs[0] ).to eq_diff( :missing, "/3", ref: 3,   can: nil )
+        expect( diffs[1] ).to eq_diff( :extra,   "/1", ref: nil, can: 5 )
+      end
+    end
+
+    context "same order, reference longer than candidate" do
       let(:reference) { [ 1, 2, 3 ] }
       let(:candidate) { [ 1, 2 ] }
 
@@ -69,7 +89,45 @@ RSpec.describe CheckPlease::Comparison do
       end
     end
 
-    context "reference shorter than candidate" do
+    context "different order, reference longer than candidate, extra reference value is a duplicate" do
+      let(:reference) { [ 1, 2, 1 ] }
+      let(:candidate) { [ 2, 1 ] }
+
+      it "has three diffs" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1, can: 2 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/2", ref: 2, can: 1 )
+        expect( diffs[2] ).to eq_diff( :missing,  "/3", ref: 1, can: nil )
+      end
+
+      specify "it has one diff for the missing element when the `match_by_value` list contains a matching path" do
+        diffs = invoke!(reference, candidate, match_by_value: [ "/" ])
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/3", ref: 1, can: nil )
+      end
+    end
+
+    context "different order, reference longer than candidate" do
+      let(:reference) { [ 1, 2, 3 ] }
+      let(:candidate) { [ 2, 1 ] }
+
+      it "has three diffs" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1, can: 2 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/2", ref: 2, can: 1 )
+        expect( diffs[2] ).to eq_diff( :missing,  "/3", ref: 3, can: nil )
+      end
+
+      specify "it has one diff for the missing element when the `match_by_value` list contains a matching path" do
+        diffs = invoke!(reference, candidate, match_by_value: [ "/" ])
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :missing, "/3", ref: 3, can: nil )
+      end
+    end
+
+    context "same order, reference shorter than candidate" do
       let(:reference) { [ 1, 2 ] }
       let(:candidate) { [ 1, 2, 3 ] }
 
@@ -77,6 +135,56 @@ RSpec.describe CheckPlease::Comparison do
         diffs = invoke!(reference, candidate)
         expect( diffs.length ).to eq( 1 )
         expect( diffs[0] ).to eq_diff( :extra, "/3", ref: nil, can: 3 )
+      end
+    end
+
+    context "different order, reference shorter than candidate, extra candidate value is a duplicate" do
+      let(:reference) { [ 1, 2 ] }
+      let(:candidate) { [ 2, 1, 1 ] }
+
+      it "has three diffs" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1,   can: 2 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/2", ref: 2,   can: 1 )
+        expect( diffs[2] ).to eq_diff( :extra,    "/3", ref: nil, can: 1 )
+      end
+
+      it "has one diff for the extra element when the `match_by_value` list contains a matching path" do
+        diffs = invoke!(reference, candidate, match_by_value: [ "/" ])
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/3", ref: nil, can: 1 )
+      end
+    end
+
+    context "different order, reference shorter than candidate" do
+      let(:reference) { [ 1, 2 ] }
+      let(:candidate) { [ 2, 1, 3 ] }
+
+      it "has three diffs" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1,   can: 2 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/2", ref: 2,   can: 1 )
+        expect( diffs[2] ).to eq_diff( :extra,    "/3", ref: nil, can: 3 )
+      end
+
+      it "has one diff for the extra element when the `match_by_value` list contains a matching path" do
+        diffs = invoke!(reference, candidate, match_by_value: [ "/" ])
+        expect( diffs.length ).to eq( 1 )
+        expect( diffs[0] ).to eq_diff( :extra, "/3", ref: nil, can: 3 )
+      end
+    end
+
+    context "same elements, different order" do
+      let(:reference) { [ 1, 2, 3 ] }
+      let(:candidate) { [ 3, 2, 1 ] }
+
+      it "has a diff for each mismatch" do
+        diffs = invoke!(reference, candidate)
+        expect( diffs.length ).to eq( 2 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/1", ref: 1, can: 3 )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/3", ref: 3, can: 1 )
       end
     end
   end
@@ -204,6 +312,14 @@ RSpec.describe CheckPlease::Comparison do
   end
 
   context "when given two arrays of hashes" do
+    it "raises an exception when the `match_by_value` list contains a matching path" do
+      reference = [ { foo: 1 } ]
+
+      candidate = [ { foo: 1 } ]
+      expect { invoke!(reference, candidate, match_by_value: [ "/" ]) }.to \
+        raise_error( CheckPlease::BehaviorUndefined )
+    end
+
     context "same length, nested hash keys differ" do
       let(:reference) { [ { foo: 1, bar: 2, yak:  3 } ] }
       let(:candidate) { [ { foo: 1, bar: 2, quux: 3 } ] }
@@ -578,5 +694,18 @@ RSpec.describe CheckPlease::Comparison do
       expect { invoke!(reference, candidate, select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
         raise_error( CheckPlease::InvalidFlag )
     end
+  end
+
+  specify "match_by_key and match_by_value play well together" do
+    a  = { "id" => 1, "list" => [ 1, 2, 3 ] }
+    b1 = { "id" => 2, "list" => [ 4, 5, 6 ] }
+    b2 = { "id" => 2, "list" => [ 4, 5, 1 ] } # degrees Fahrenheit
+
+    reference = [ a,  b1 ]
+    candidate = [ b2, a ]
+    diffs = invoke!( reference, candidate, match_by_key: [ "/:id" ], match_by_value: [ "/:id/list" ] )
+    expect( diffs.length ).to eq( 2 )
+    expect( diffs[0] ).to eq_diff( :missing, "/id=2/list/3", ref: 6,   can: nil )
+    expect( diffs[1] ).to eq_diff( :extra,   "/id=2/list/3", ref: nil, can: 1 )
   end
 end

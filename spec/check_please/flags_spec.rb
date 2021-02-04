@@ -31,6 +31,56 @@ RSpec.describe CheckPlease::Flags do
     it_coerces "yarp" , to: true
   end
 
+  shared_examples "a path list" do
+    it "defaults to an empty array" do
+      flags = flagify()
+      expect( flags.send(flag_name) ).to eq( [] )
+    end
+
+    # Sorry, this got... super abstract when DRYed up :/
+
+    spec_body = ->(_example) {
+      flags = flagify()
+
+      expected = []
+      paths_to_add.each do |path_name|
+        expected << path_name
+        flags.send "#{flag_name}=", path_name
+        actual = flags.send(flag_name)
+        expect( actual ).to eq( pathify(expected) )
+      end
+    }
+
+    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
+    specify "the list doesn't persist between instances", &spec_body
+  end
+
+  shared_examples "an optional positive integer flag" do
+    it "defaults to nil" do
+      flags = flagify()
+      expect( flags.send(flag_name) ).to be nil
+    end
+
+    it "can be set to an integer larger than zero at initialization time" do
+      flags = flagify(max_diffs: 1)
+      expect( flags.send(flag_name) ).to eq( 1 )
+    end
+
+    it "can't be set to zero" do
+      expect { flagify(flag_name => 0) }.to \
+        raise_error( CheckPlease::InvalidFlag )
+    end
+
+    it "can't be set to a negative integer" do
+      expect { flagify(flag_name => -1) }.to \
+        raise_error( CheckPlease::InvalidFlag )
+    end
+
+    it "coerces a string value to an integer" do
+      flags = flagify(flag_name => "42")
+      expect( flags.send(flag_name) ).to eq( 42 )
+    end
+  end
 
 
   describe "#format" do
@@ -51,99 +101,32 @@ RSpec.describe CheckPlease::Flags do
   end
 
   describe "#max_diffs" do
-    it "defaults to nil" do
-      flags = flagify()
-      expect( flags.max_diffs ).to be nil
-    end
-
-    it "can be set to an integer larger than zero at initialization time" do
-      flags = flagify(max_diffs: 1)
-      expect( flags.max_diffs ).to eq( 1 )
-    end
-
-    it "can't be set to zero" do
-      expect { flagify(max_diffs: 0) }.to \
-        raise_error( CheckPlease::InvalidFlag )
-    end
-
-    it "can't be set to a negative integer" do
-      expect { flagify(max_diffs: -1) }.to \
-        raise_error( CheckPlease::InvalidFlag )
-    end
-
-    it "coerces a string value to an integer" do
-      flags = flagify(max_diffs: "42")
-      expect( flags.max_diffs ).to eq( 42 )
-    end
+    let(:flag_name) { :max_diffs }
+    it_behaves_like "an optional positive integer flag"
   end
 
   describe "#fail_fast" do
-    it_behaves_like "a boolean flag" do
-      let(:flag_name) { :fail_fast }
-    end
+    let(:flag_name) { :fail_fast }
+    it_behaves_like "a boolean flag"
   end
 
   describe "#max_depth" do
-    it "defaults to nil" do
-      flags = flagify()
-      expect( flags.max_depth ).to be nil
-    end
-
-    it "can be set to an integer larger than zero at initialization time" do
-      flags = flagify(max_depth: 1)
-      expect( flags.max_depth ).to eq( 1 )
-    end
-
-    it "can't be set to zero" do
-      expect { flagify(max_depth: 0) }.to \
-        raise_error( CheckPlease::InvalidFlag )
-    end
-
-    it "can't be set to a negative integer" do
-      expect { flagify(max_depth: -1) }.to \
-        raise_error( CheckPlease::InvalidFlag )
-    end
-
-    it "coerces a string value to an integer" do
-      flags = flagify(max_depth: "42")
-      expect( flags.max_depth ).to eq( 42 )
-    end
+    let(:flag_name) { :max_diffs }
+    it_behaves_like "an optional positive integer flag"
   end
 
   describe "select_paths" do
-    it "defaults to an empty array" do
-      flags = flagify()
-      expect( flags.select_paths ).to eq( [] )
+    let(:flag_name) { :select_paths }
+    it_behaves_like "a path list" do
+      let(:paths_to_add) { [ "/foo", "/bar" ] }
     end
-
-    spec_body = ->(_example) {
-      flags = flagify()
-      flags.select_paths = "/foo"
-      expect( flags.select_paths ).to eq( pathify([ "/foo" ]) )
-      flags.select_paths = "/bar"
-      expect( flags.select_paths ).to eq( pathify([ "/foo", "/bar" ]) )
-    }
-
-    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
-    specify "the list doesn't persist between instances", &spec_body
   end
 
   describe "reject_paths" do
-    it "defaults to an empty array" do
-      flags = flagify()
-      expect( flags.reject_paths ).to eq( [] )
+    let(:flag_name) { :reject_paths }
+    it_behaves_like "a path list" do
+      let(:paths_to_add) { [ "/foo", "/bar" ] }
     end
-
-    spec_body = ->(_example) {
-      flags = flagify()
-      flags.reject_paths = "/foo"
-      expect( flags.reject_paths ).to eq( pathify([ "/foo" ]) )
-      flags.reject_paths = "/bar"
-      expect( flags.reject_paths ).to eq( pathify([ "/foo", "/bar" ]) )
-    }
-
-    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
-    specify "the list doesn't persist between instances", &spec_body
   end
 
   specify "select_paths and reject_paths can't both be set" do
@@ -152,35 +135,27 @@ RSpec.describe CheckPlease::Flags do
   end
 
   describe "match_by_key" do
-    it "defaults to an empty array" do
-      flags = flagify()
-      expect( flags.match_by_key ).to eq( [] )
+    let(:flag_name) { :match_by_key }
+    it_behaves_like "a path list" do
+      let(:paths_to_add) { [ "/:id", "/foo/:id", "/bar/:id" ] }
     end
+  end
 
-    spec_body = ->(_example) {
-      flags = flagify()
-      flags.match_by_key = "/:id"
-      expect( flags.match_by_key ).to eq( pathify([ "/:id" ]) )
-      flags.match_by_key = "/foo/:id"
-      expect( flags.match_by_key ).to eq( pathify([ "/:id", "/foo/:id" ]) )
-      flags.match_by_key = "/bar/:id"
-      expect( flags.match_by_key ).to eq( pathify([ "/:id", "/foo/:id", "/bar/:id" ]) )
-    }
-
-    specify "the setter is a little surprising: it [reifies and] appends any values it's given to a list", &spec_body
-    specify "the list doesn't persist between instances", &spec_body
+  describe "match_by_value" do
+    let(:flag_name) { :match_by_value }
+    it_behaves_like "a path list" do
+      let(:paths_to_add) { [ "/foo", "/bar" ] }
+    end
   end
 
   describe "#indifferent_keys" do
-    it_behaves_like "a boolean flag" do
-      let(:flag_name) { :indifferent_keys }
-    end
+    let(:flag_name) { :indifferent_keys }
+    it_behaves_like "a boolean flag"
   end
 
   describe "#indifferent_values" do
-    it_behaves_like "a boolean flag" do
-      let(:flag_name) { :indifferent_values }
-    end
+    let(:flag_name) { :indifferent_values }
+    it_behaves_like "a boolean flag"
   end
 
 end
