@@ -72,11 +72,35 @@ RSpec.describe CheckPlease::Path do
       end
     end
 
+    describe "'/foo/*'" do
+      subject { described_class.new('/foo/*') }
+
+      has_these_basic_properties(
+        :to_s  => "/foo/*",
+        :depth => 3,
+        :root? => false,
+      )
+
+      specify "its .parent is a Path with name='/foo'" do
+        expect( subject.parent ).to eq( pathify('/foo') )
+      end
+    end
+
     describe "'/foo/bar/yak'" do
       subject { described_class.new('/foo/bar/yak') }
 
       has_these_basic_properties(
         :to_s  => "/foo/bar/yak",
+        :depth => 4,
+        :root? => false,
+      )
+    end
+
+    describe "'/foo/*/yak'" do
+      subject { described_class.new('/foo/*/yak') }
+
+      has_these_basic_properties(
+        :to_s  => "/foo/*/yak",
         :depth => 4,
         :root? => false,
       )
@@ -346,6 +370,8 @@ RSpec.describe CheckPlease::Path do
         '/bar',
         '/foo/bar',
         '/foo/yak',
+        '/*',
+        '/foo/*',
         '/foo/:id',
         '/foo/id=23',
         '/foo/id=42',
