@@ -340,79 +340,74 @@ RSpec.describe CheckPlease::Path do
   end
 
   describe "#match?" do
-    def self.it_returns(expected, when_given:)
-      line = caller[0].split(":")[1]
-      specify "[line #{line}] returns #{expected} when given #{when_given.inspect}" do
+    def self.paths_to_test
+      [
+        '/foo',
+        '/bar',
+        '/foo/bar',
+        '/foo/yak',
+        '/foo/:id',
+        '/foo/id=23',
+        '/foo/id=42',
+        '/foo/id=42/bar',
+        '/foo/id=42/bar/id=23',
+        '/foo/:name',
+        '/foo/:name/bar/:id',
+      ]
+    end
 
+    def self.it_returns(expected, when_given:, line: nil)
+      specify "returns #{expected} when given #{when_given.inspect}" do
         actual = subject.match?(when_given) # <-- where the magic happens
-
         _compare expected, actual
+      end
+    end
+
+    def self.it_matches(*paths_expected_to_match)
+      true_paths = Array(paths_expected_to_match).flatten
+      false_paths = paths_to_test - true_paths
+
+      true_paths.each do |true_path|
+        it_returns true, when_given: true_path
+      end
+      false_paths.each do |false_path|
+        it_returns false, when_given: false_path
       end
     end
 
     context "for path '/foo'" do
       subject { pathify('/foo') }
 
-      it_returns true,  when_given: "/foo" # literal string equality
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns false, when_given: "/foo/:name"
-      it_returns false, when_given: "/foo/:name/bar/:id"
+      it_matches(
+        "/foo", # literal string equality
+      )
     end
 
     context "for path '/foo/id=42'" do
       subject { pathify('/foo/id=42') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns true,  when_given: "/foo/:id"   # key/val expr in subject matches key expr in argument
-      it_returns false, when_given: "/foo/id=23"
-      it_returns true,  when_given: "/foo/id=42" # literal string equality
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns false, when_given: "/foo/:id/bar/:id"
-      it_returns false, when_given: "/foo/:name"
-      it_returns false, when_given: "/foo/:name/bar/:id"
+      it_matches(
+        "/foo/id=42", # literal string equality
+        "/foo/:id",   # key/val expr in subject matches key expr in argument
+      )
     end
 
     context "for path '/foo/id=42/bar/id=23'" do
       subject { pathify('/foo/id=42/bar/id=23') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"               # key/val expr in subject matches *first* key expr in argument, but incomplete path
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns true,  when_given: "/foo/id=42/bar/id=23"   # literal string equality
-      it_returns false, when_given: "/foo/name=42/bar/id=23"
-      it_returns true,  when_given: "/foo/:id/bar/:id"       # key/val expr in subject matches key expr in argument
-      it_returns false, when_given: "/foo/:name"             # first key expr in subject does not match
-      it_returns false, when_given: "/foo/:name/bar/:id"     # first key expr in subject does not match
+      it_matches(
+        "/foo/id=42/bar/id=23", # literal string equality
+        "/foo/:id/bar/:id",     # key/val expr in subject matches key expr in argument
+      )
     end
 
     context "for path '/foo/name=42/bar/id=23'" do
       subject { pathify('/foo/name=42/bar/id=23') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns true,  when_given: "/foo/name=42/bar/id=23" # literal string equality
-      it_returns false, when_given: "/foo/:id/bar/:id"       # first key expr in subject does not match
-      it_returns false,  when_given: "/foo/:name"            # first key/val expr in subject matches first key expr in argument, but incomplete path
-      it_returns true,  when_given: "/foo/:name/bar/:id"     # both key/val exprs in subject match key exprs in argument
+      it_matches(
+        "/foo/name=42/bar/id=23", # literal string equality
+        "/foo/:name/bar/:id",     # key/val expr in subject matches key expr in argument
+      )
     end
   end
 
