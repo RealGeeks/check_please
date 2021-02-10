@@ -1,7 +1,8 @@
 RSpec.describe CheckPlease::PathSegment do
   def self.match_eh_returns(values_and_expected_returns = {})
+    line = caller[0].split(":")[1]
     values_and_expected_returns.each do |value, expected|
-      specify "#match?(#{value.inspect}) returns #{expected.inspect}" do
+      specify "[line #{line}] #match?(#{value.inspect}) returns #{expected.inspect}" do
 
         actual = subject.match?(value) # <-- where the magic happens
 
