@@ -1,5 +1,4 @@
 module CheckPlease
-  using Refinements
 
   class Comparison
     def self.perform(reference, candidate, flags = {})
@@ -7,7 +6,7 @@ module CheckPlease
     end
 
     def perform(reference, candidate, flags = {})
-      @flags = Flags(flags) # whoa, it's almost like Java in here
+      @flags = Flags.reify(flags)
       @diffs = Diffs.new(flags: @flags)
 
       catch(:max_diffs_reached) do

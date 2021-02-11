@@ -3,6 +3,9 @@ module CheckPlease
   # NOTE: this gets all of its attributes defined (via .define) in ../check_please.rb
 
   class Flags
+    include CheckPlease::Reification
+    can_reify Hash
+
     BY_NAME = {} ; private_constant :BY_NAME
 
     def self.[](name)

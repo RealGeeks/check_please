@@ -18,7 +18,6 @@ module CheckPlease
   autoload :PathSegment,        "check_please/path_segment"
   autoload :PathSegmentMatcher, "check_please/path_segment_matcher"
   autoload :Printers,           "check_please/printers"
-  autoload :Refinements,        "check_please/refinements"
 end
 
 
