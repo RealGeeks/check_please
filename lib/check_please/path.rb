@@ -17,17 +17,18 @@ module CheckPlease
     def initialize(name_or_segments = [])
       case name_or_segments
       when String, Symbol, Numeric, nil
-        names = name_or_segments.to_s.split(SEPARATOR)
+        string = name_or_segments.to_s
+        if string =~ %r(//)
+          raise InvalidPath, "paths cannot have empty segments"
+        end
+
+        names = string.split(SEPARATOR)
         names.shift until names.empty? || names.first =~ /\S/
         segments = PathSegment.reify(names)
       when Array
         segments = PathSegment.reify(name_or_segments)
       else
         raise InvalidPath, "not sure what to do with #{name_or_segments.inspect}"
-      end
-
-      if segments.any?(&:empty?)
-        raise InvalidPath, "#{self.class.name} cannot contain empty segments"
       end
 
       @segments = Array(segments)

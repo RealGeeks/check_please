@@ -12,21 +12,16 @@ module CheckPlease
     end
 
     def call
-      # These checks are order-dependent
-      return true  if both?(:empty)
-      return false if either?(:empty) # assumes !both?(:empty)
-      return true  if either?(:splat) # assumes !either?(:empty)
-      # The rest aren't
-
+      return true             if either?(:splat)
       return a.name == b.name if both?(:plain)
-      return a.key == b.key   if key_and_key_value?
-      return false
+      return a.key  == b.key  if key_and_key_value?
+
+      false
     end
 
     private
 
     def _type(x)
-      return :empty     if x.empty?
       return :splat     if x.splat?
       return :key       if x.key_expr?
       return :key_value if x.key_val_expr?

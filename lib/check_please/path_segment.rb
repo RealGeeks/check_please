@@ -30,17 +30,14 @@ module CheckPlease
 
     def initialize(name = nil)
       @name = name.to_s.strip
-      if @name =~ %r(\s) # has any whitespace
-        raise InvalidPathSegment, <<~EOF
-          #{name.inspect} is not a valid #{self.class} name
-        EOF
+
+      case @name
+      when "", /\s/ # blank or has any whitespace
+        raise InvalidPathSegment, "#{name.inspect} is not a valid #{self.class} name"
       end
+
       parse_key_and_value
       freeze
-    end
-
-    def empty?
-      name.empty?
     end
 
     def key_expr?
