@@ -56,6 +56,18 @@ module CheckPlease
       CheckPlease::Printers.render(self, flags)
     end
 
+    def method_missing(meth, *args, &blk)
+      if formats.include?(meth.to_sym)
+        CheckPlease::Printers.render(self, format: meth)
+      else
+        super
+      end
+    end
+
+    def formats
+      CheckPlease::Printers::FORMATS
+    end
+
     extend Forwardable
     def_delegators :@list, *%i[
       each

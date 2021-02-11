@@ -13,7 +13,7 @@ Usage: check_please <reference> <candidate> [FLAGS]
 
   FLAGS:
     -f, --format FORMAT              Format in which to present diffs.
-                                       (Allowed values: [json, table])
+                                       (Allowed values: [json, long, table])
     -n, --max-diffs MAX_DIFFS        Stop after encountering a specified number of diffs.
         --fail-fast                  Stop after encountering the first diff.
                                        (equivalent to '--max-diffs 1')

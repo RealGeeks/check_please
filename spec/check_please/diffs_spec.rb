@@ -25,4 +25,45 @@ RSpec.describe CheckPlease::Diffs do
     end
   end
 
+  describe "output" do
+    before do
+      subject << CheckPlease::Diff.new(:missing,  "/foo",  42,             nil)
+      subject << CheckPlease::Diff.new(:extra,    "/spam", nil,            23)
+      subject << CheckPlease::Diff.new(:mismatch, "/yak",  "Hello world!", "Howdy globe!")
+    end
+
+    def render_as(format)
+      CheckPlease::Printers.render(subject, format: format)
+    end
+
+		specify "#to_s defaults to the :table format" do
+      expected = render_as(:table)
+      expect( subject.to_s ).to eq( expected )
+    end
+
+    specify "#to_s takes an optional :format kwarg" do
+      CheckPlease::Printers::FORMATS.each do |format|
+        expected = render_as(format)
+        expect( subject.to_s(format: format) ).to eq( expected )
+      end
+    end
+
+    describe "format-specific output methods" do
+      CheckPlease::Printers::PRINTERS_BY_FORMAT.each do |format, klass|
+        specify "##{format} renders using #{klass}" do
+          expected = render_as(format)
+          expect( subject.send(format) ).to eq( expected )
+        end
+      end
+
+      specify "#bogus_format raises NoMethodError" do
+        expect { subject.bogus_format }.to raise_error( NoMethodError )
+      end
+
+      specify "#formats returns a list of formats to help remind forgetful developers what's available" do
+        expect( subject.formats ).to eq( CheckPlease::Printers::FORMATS )
+      end
+    end
+  end
+
 end
