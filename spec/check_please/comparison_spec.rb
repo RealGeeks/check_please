@@ -733,7 +733,21 @@ RSpec.describe CheckPlease::Comparison do
     candidate = [ b2, a ]
     diffs = invoke!( reference, candidate, match_by_key: [ "/:id" ], match_by_value: [ "/:id/list" ] )
     expect( diffs.length ).to eq( 2 )
+
     expect( diffs[0] ).to eq_diff( :missing, "/id=2/list/3", ref: 6,   can: nil )
     expect( diffs[1] ).to eq_diff( :extra,   "/id=2/list/3", ref: nil, can: 1 )
+  end
+
+  specify "match_by_value and wildcards play well together" do
+    reference = { "data" => { "letters" => %w[ a b c ], "numbers" => [ 1, 2, 3 ] } }
+    candidate = { "data" => { "letters" => %w[ b a d ], "numbers" => [ 3, 2, 5 ] } }
+
+    diffs = invoke!( reference, candidate, match_by_value: [ "/data/*" ] )
+    expect( diffs.length ).to eq( 4 )
+
+    expect( diffs[0] ).to eq_diff( :missing, "/data/letters/3", ref: "c", can: nil )
+    expect( diffs[1] ).to eq_diff( :extra,   "/data/letters/3", ref: nil, can: "d" )
+    expect( diffs[2] ).to eq_diff( :missing, "/data/numbers/1", ref: 1,   can: nil )
+    expect( diffs[3] ).to eq_diff( :extra,   "/data/numbers/3", ref: nil, can: 5 )
   end
 end
