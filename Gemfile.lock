@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    check_please (0.5.4)
+    check_please (0.5.5)
       table_print
 
 GEM
