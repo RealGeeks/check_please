@@ -72,11 +72,35 @@ RSpec.describe CheckPlease::Path do
       end
     end
 
+    describe "'/foo/*'" do
+      subject { described_class.new('/foo/*') }
+
+      has_these_basic_properties(
+        :to_s  => "/foo/*",
+        :depth => 3,
+        :root? => false,
+      )
+
+      specify "its .parent is a Path with name='/foo'" do
+        expect( subject.parent ).to eq( pathify('/foo') )
+      end
+    end
+
     describe "'/foo/bar/yak'" do
       subject { described_class.new('/foo/bar/yak') }
 
       has_these_basic_properties(
         :to_s  => "/foo/bar/yak",
+        :depth => 4,
+        :root? => false,
+      )
+    end
+
+    describe "'/foo/*/yak'" do
+      subject { described_class.new('/foo/*/yak') }
+
+      has_these_basic_properties(
+        :to_s  => "/foo/*/yak",
         :depth => 4,
         :root? => false,
       )
@@ -294,125 +318,178 @@ RSpec.describe CheckPlease::Path do
   describe "#excluded?" do
     it "answers true if the path's depth exceeds the max_depth flag (NOTE: root has depth=1)" do
       flags = flagify(max_depth: 2)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
 
       flags = flagify(max_depth: 3)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
 
       flags = flagify(max_depth: 4)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
     end
 
     # NOTE: the /name, /words/*, and /meta/* examples were swiped from spec/check_please/comparison_spec.rb
 
     it "answers true if select_paths is present and the path IS NOT on/under the list" do
       flags = flagify(select_paths: "/words")
-      expect( pathify('/name')     ).to     be_excluded(flags)
-      expect( pathify('/words')    ).to_not be_excluded(flags)
-      expect( pathify('/words/3')  ).to_not be_excluded(flags)
-      expect( pathify('/words/6')  ).to_not be_excluded(flags)
-      expect( pathify('/words/11') ).to_not be_excluded(flags)
-      expect( pathify('/meta')     ).to     be_excluded(flags)
-      expect( pathify('/meta/foo') ).to     be_excluded(flags)
-      expect( pathify('/meta/bar') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/name')     ).to     be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to     be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to     be_excluded(flags)
+      end
     end
 
     it "answers true if reject_paths is present and the path IS on/under the list" do
       flags = flagify(reject_paths: "/words")
-      expect( pathify('/name')     ).to_not be_excluded(flags)
-      expect( pathify('/words')    ).to     be_excluded(flags)
-      expect( pathify('/words/3')  ).to     be_excluded(flags)
-      expect( pathify('/words/6')  ).to     be_excluded(flags)
-      expect( pathify('/words/11') ).to     be_excluded(flags)
-      expect( pathify('/meta')     ).to_not be_excluded(flags)
-      expect( pathify('/meta/foo') ).to_not be_excluded(flags)
-      expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to     be_excluded(flags)
+        expect( pathify('/words/3')  ).to     be_excluded(flags)
+        expect( pathify('/words/6')  ).to     be_excluded(flags)
+        expect( pathify('/words/11') ).to     be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to_not be_excluded(flags)
+        expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      end
+    end
+
+    it "answers true if reject_paths is present and the path IS on/under the list" do
+      flags = flagify(reject_paths: ["/meta/foo"])
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      end
+    end
+
+    it "answers true if reject_paths is present and the path IS on/under the list, with a wildcard" do
+      flags = flagify(reject_paths: ["/meta/*"])
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to     be_excluded(flags)
+
+        # BONUS TEST
+        expect( pathify('/meta/bar/yak') ).to be_excluded(flags)
+      end
     end
   end
 
   describe "#match?" do
-    def self.it_returns(expected, when_given:)
-      line = caller[0].split(":")[1]
-      specify "[line #{line}] returns #{expected} when given #{when_given.inspect}" do
+    def self.paths_to_test
+      [
+        '/foo',
+        '/bar',
+        '/foo/bar',
+        '/foo/yak',
+        '/*',
+        '/foo/*',
+        '/foo/:id',
+        '/foo/id=23',
+        '/foo/id=42',
+        '/foo/id=42/bar',
+        '/foo/id=42/bar/id=23',
+        '/foo/:name',
+        '/foo/:name/bar/:id',
+        '/foo/*/bar/*',
+      ]
+    end
 
+    def self.it_returns(expected, when_given:, line: nil)
+      specify "returns #{expected} when given #{when_given.inspect}" do
         actual = subject.match?(when_given) # <-- where the magic happens
-
         _compare expected, actual
+      end
+    end
+
+    def self.it_matches(*paths_expected_to_match)
+      true_paths = Array(paths_expected_to_match).flatten
+      false_paths = paths_to_test - true_paths
+
+      true_paths.each do |true_path|
+        it_returns true, when_given: true_path
+      end
+      false_paths.each do |false_path|
+        it_returns false, when_given: false_path
       end
     end
 
     context "for path '/foo'" do
       subject { pathify('/foo') }
 
-      it_returns true,  when_given: "/foo" # literal string equality
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns false, when_given: "/foo/:name"
-      it_returns false, when_given: "/foo/:name/bar/:id"
+      it_matches(
+        '/foo', # literal string equality
+        '/*',   # wildcard
+      )
+    end
+
+    context "for path '/*'" do
+      subject { pathify('/*') }
+
+      it_matches(
+        '/foo', # wildcard
+        '/bar', # wildcard
+        '/*',   # literal string equality
+      )
     end
 
     context "for path '/foo/id=42'" do
       subject { pathify('/foo/id=42') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns true,  when_given: "/foo/:id"   # key/val expr in subject matches key expr in argument
-      it_returns false, when_given: "/foo/id=23"
-      it_returns true,  when_given: "/foo/id=42" # literal string equality
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns false, when_given: "/foo/:id/bar/:id"
-      it_returns false, when_given: "/foo/:name"
-      it_returns false, when_given: "/foo/:name/bar/:id"
+      it_matches(
+        '/foo/id=42', # literal string equality
+        '/foo/:id',   # key/val expr in subject matches key expr in argument
+        '/foo/*',     # wildcard
+      )
     end
 
     context "for path '/foo/id=42/bar/id=23'" do
       subject { pathify('/foo/id=42/bar/id=23') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"               # key/val expr in subject matches *first* key expr in argument, but incomplete path
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns true,  when_given: "/foo/id=42/bar/id=23"   # literal string equality
-      it_returns false, when_given: "/foo/name=42/bar/id=23"
-      it_returns true,  when_given: "/foo/:id/bar/:id"       # key/val expr in subject matches key expr in argument
-      it_returns false, when_given: "/foo/:name"             # first key expr in subject does not match
-      it_returns false, when_given: "/foo/:name/bar/:id"     # first key expr in subject does not match
+      it_matches(
+        '/foo/id=42/bar/id=23', # literal string equality
+        '/foo/:id/bar/:id',     # key/val expr in subject matches key expr in argument
+        '/foo/*/bar/*',         # wildcard
+      )
     end
 
     context "for path '/foo/name=42/bar/id=23'" do
       subject { pathify('/foo/name=42/bar/id=23') }
 
-      it_returns false, when_given: "/foo"
-      it_returns false, when_given: "/bar"
-      it_returns false, when_given: "/foo/bar"
-      it_returns false, when_given: "/foo/:id"
-      it_returns false, when_given: "/foo/id=23"
-      it_returns false, when_given: "/foo/id=42"
-      it_returns false, when_given: "/foo/id=42/bar"
-      it_returns false, when_given: "/foo/id=42/bar/id=23"
-      it_returns true,  when_given: "/foo/name=42/bar/id=23" # literal string equality
-      it_returns false, when_given: "/foo/:id/bar/:id"       # first key expr in subject does not match
-      it_returns false,  when_given: "/foo/:name"            # first key/val expr in subject matches first key expr in argument, but incomplete path
-      it_returns true,  when_given: "/foo/:name/bar/:id"     # both key/val exprs in subject match key exprs in argument
+      it_matches(
+        '/foo/name=42/bar/id=23', # literal string equality
+        '/foo/:name/bar/:id',     # key/val expr in subject matches key expr in argument
+        '/foo/*/bar/*',           # wildcard
+      )
     end
   end
 
