@@ -318,48 +318,89 @@ RSpec.describe CheckPlease::Path do
   describe "#excluded?" do
     it "answers true if the path's depth exceeds the max_depth flag (NOTE: root has depth=1)" do
       flags = flagify(max_depth: 2)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
 
       flags = flagify(max_depth: 3)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to     be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
 
       flags = flagify(max_depth: 4)
-      expect( pathify('/foo')              ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak')      ).to_not be_excluded(flags)
-      expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/foo')              ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar')          ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak')      ).to_not be_excluded(flags)
+        expect( pathify('/foo/bar/yak/spam') ).to     be_excluded(flags)
+      end
     end
 
     # NOTE: the /name, /words/*, and /meta/* examples were swiped from spec/check_please/comparison_spec.rb
 
     it "answers true if select_paths is present and the path IS NOT on/under the list" do
       flags = flagify(select_paths: "/words")
-      expect( pathify('/name')     ).to     be_excluded(flags)
-      expect( pathify('/words')    ).to_not be_excluded(flags)
-      expect( pathify('/words/3')  ).to_not be_excluded(flags)
-      expect( pathify('/words/6')  ).to_not be_excluded(flags)
-      expect( pathify('/words/11') ).to_not be_excluded(flags)
-      expect( pathify('/meta')     ).to     be_excluded(flags)
-      expect( pathify('/meta/foo') ).to     be_excluded(flags)
-      expect( pathify('/meta/bar') ).to     be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/name')     ).to     be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to     be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to     be_excluded(flags)
+      end
     end
 
     it "answers true if reject_paths is present and the path IS on/under the list" do
       flags = flagify(reject_paths: "/words")
-      expect( pathify('/name')     ).to_not be_excluded(flags)
-      expect( pathify('/words')    ).to     be_excluded(flags)
-      expect( pathify('/words/3')  ).to     be_excluded(flags)
-      expect( pathify('/words/6')  ).to     be_excluded(flags)
-      expect( pathify('/words/11') ).to     be_excluded(flags)
-      expect( pathify('/meta')     ).to_not be_excluded(flags)
-      expect( pathify('/meta/foo') ).to_not be_excluded(flags)
-      expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to     be_excluded(flags)
+        expect( pathify('/words/3')  ).to     be_excluded(flags)
+        expect( pathify('/words/6')  ).to     be_excluded(flags)
+        expect( pathify('/words/11') ).to     be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to_not be_excluded(flags)
+        expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      end
+    end
+
+    it "answers true if reject_paths is present and the path IS on/under the list" do
+      flags = flagify(reject_paths: ["/meta/foo"])
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to_not be_excluded(flags)
+      end
+    end
+
+    it "answers true if reject_paths is present and the path IS on/under the list, with a wildcard" do
+      flags = flagify(reject_paths: ["/meta/*"])
+      aggregate_failures do
+        expect( pathify('/name')     ).to_not be_excluded(flags)
+        expect( pathify('/words')    ).to_not be_excluded(flags)
+        expect( pathify('/words/3')  ).to_not be_excluded(flags)
+        expect( pathify('/words/6')  ).to_not be_excluded(flags)
+        expect( pathify('/words/11') ).to_not be_excluded(flags)
+        expect( pathify('/meta')     ).to_not be_excluded(flags)
+        expect( pathify('/meta/foo') ).to     be_excluded(flags)
+        expect( pathify('/meta/bar') ).to     be_excluded(flags)
+
+        # BONUS TEST
+        expect( pathify('/meta/bar/yak') ).to be_excluded(flags)
+      end
     end
   end
 
@@ -379,6 +420,7 @@ RSpec.describe CheckPlease::Path do
         '/foo/id=42/bar/id=23',
         '/foo/:name',
         '/foo/:name/bar/:id',
+        '/foo/*/bar/*',
       ]
     end
 
@@ -405,7 +447,18 @@ RSpec.describe CheckPlease::Path do
       subject { pathify('/foo') }
 
       it_matches(
-        "/foo", # literal string equality
+        '/foo', # literal string equality
+        '/*',   # wildcard
+      )
+    end
+
+    context "for path '/*'" do
+      subject { pathify('/*') }
+
+      it_matches(
+        '/foo', # wildcard
+        '/bar', # wildcard
+        '/*',   # literal string equality
       )
     end
 
@@ -413,8 +466,9 @@ RSpec.describe CheckPlease::Path do
       subject { pathify('/foo/id=42') }
 
       it_matches(
-        "/foo/id=42", # literal string equality
-        "/foo/:id",   # key/val expr in subject matches key expr in argument
+        '/foo/id=42', # literal string equality
+        '/foo/:id',   # key/val expr in subject matches key expr in argument
+        '/foo/*',     # wildcard
       )
     end
 
@@ -422,8 +476,9 @@ RSpec.describe CheckPlease::Path do
       subject { pathify('/foo/id=42/bar/id=23') }
 
       it_matches(
-        "/foo/id=42/bar/id=23", # literal string equality
-        "/foo/:id/bar/:id",     # key/val expr in subject matches key expr in argument
+        '/foo/id=42/bar/id=23', # literal string equality
+        '/foo/:id/bar/:id',     # key/val expr in subject matches key expr in argument
+        '/foo/*/bar/*',         # wildcard
       )
     end
 
@@ -431,8 +486,9 @@ RSpec.describe CheckPlease::Path do
       subject { pathify('/foo/name=42/bar/id=23') }
 
       it_matches(
-        "/foo/name=42/bar/id=23", # literal string equality
-        "/foo/:name/bar/:id",     # key/val expr in subject matches key expr in argument
+        '/foo/name=42/bar/id=23', # literal string equality
+        '/foo/:name/bar/:id',     # key/val expr in subject matches key expr in argument
+        '/foo/*/bar/*',           # wildcard
       )
     end
   end

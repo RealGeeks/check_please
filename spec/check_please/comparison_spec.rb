@@ -690,6 +690,34 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs["/meta/bar"] ).to eq_diff( :missing,  "/meta/bar", ref: "eggs", can: nil )
     end
 
+    it "can be told to NOT record diffs matching a wildcard path" do
+      diffs = invoke!(reference, candidate, reject_paths: ["/meta/*"])
+      expect( diffs.length ).to eq( 4 )
+
+      expect( diffs["/name"]     ).to eq_diff( :mismatch, "/name",     ref: "The Answer", can: "Charlie" )
+      expect( diffs["/words/3"]  ).to eq_diff( :mismatch, "/words/3",  ref: "you",        can: "we" )
+      expect( diffs["/words/6"]  ).to eq_diff( :mismatch, "/words/6",  ref: "you",        can: "I" )
+      expect( diffs["/words/11"] ).to eq_diff( :extra,    "/words/11", ref: nil,          can: "dude" )
+    end
+
+    it "can be told to NOT record diffs matching a wildcard path, part 2" do
+      reference = { posts: [ { id: 1, name: "Alice" } ] }
+      candidate = { posts: [ { id: 2, name: "Bob" } ] }
+      diffs = invoke!(reference, candidate, reject_paths: ["/posts/*/name"])
+      expect( diffs.length ).to eq( 1 )
+
+      expect( diffs[0] ).to eq_diff( :mismatch, "/posts/1/id", ref: 1, can: 2)
+    end
+
+    it "can be told to NOT record diffs matching a wildcard path, part 3" do
+      reference = { posts: [ { id: 1, ads: [ { time: "soon" } ] } ] }
+      candidate = { posts: [ { id: 2, ads: [ { time: "late" } ] } ] }
+      diffs = invoke!(reference, candidate, reject_paths: ["/posts/*/ads/*/time"])
+      expect( diffs.length ).to eq( 1 )
+
+      expect( diffs[0] ).to eq_diff( :mismatch, "/posts/1/id", ref: 1, can: 2)
+    end
+
     specify "attempting to invoke with both :select_paths and :reject_paths asplodes" do
       expect { invoke!(reference, candidate, select_paths: ["/foo"], reject_paths: ["/bar"]) }.to \
         raise_error( CheckPlease::InvalidFlag )

@@ -52,23 +52,12 @@ module CheckPlease
     end
 
     def match?(other_segment_or_string)
-      other = self.class.reify(other_segment_or_string)
-
-      match_types = [ self.match_type, other.match_type ]
-      case match_types
-      when [ :plain,     :plain     ] ; self.name == other.name
-      when [ :key,       :key_value ] ; self.key  == other.key
-      when [ :key_value, :key       ] ; self.key  == other.key
-      else                            ; false
-      end
+      other = reify(other_segment_or_string)
+      PathSegmentMatcher.call(self, other)
     end
 
-    protected
-
-    def match_type
-      return :key       if key_expr?
-      return :key_value if key_val_expr?
-      :plain
+    def splat?
+      name == '*'
     end
 
     private

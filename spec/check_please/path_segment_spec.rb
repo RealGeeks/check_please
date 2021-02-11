@@ -79,10 +79,12 @@ RSpec.describe CheckPlease::PathSegment do
       :key_value     => nil,
       :key_expr?     => false,
       :key_val_expr? => false,
+      :splat?        => false,
     )
 
     match_eh_returns(
-      ""       => true, # names match
+      ""       => true,  # names match
+      "*"      => false, # wildcard doesn't match empty (which should only happen at root)
       "foo"    => false,
       "bar"    => false,
       ":foo"   => false,
@@ -101,10 +103,12 @@ RSpec.describe CheckPlease::PathSegment do
       :key_value     => nil,
       :key_expr?     => false,
       :key_val_expr? => false,
+      :splat?        => false,
     )
 
     match_eh_returns(
       ""       => false,
+      "*"      => true, # wildcard
       "foo"    => true, # names match
       "bar"    => false,
       ":foo"   => false,
@@ -123,10 +127,12 @@ RSpec.describe CheckPlease::PathSegment do
       :key_value     => nil,
       :key_expr?     => true,
       :key_val_expr? => false,
+      :splat?        => false,
     )
 
     match_eh_returns(
       ""       => false,
+      "*"      => true, # wildcard
       "foo"    => false,
       "bar"    => false,
       ":foo"   => false, # key exprs can't match other key exprs
@@ -145,10 +151,12 @@ RSpec.describe CheckPlease::PathSegment do
       :key_value     => "42",
       :key_expr?     => false,
       :key_val_expr? => true,
+      :splat?        => false,
     )
 
     match_eh_returns(
       ""       => false,
+      "*"      => true, # wildcard
       "foo"    => false,
       "bar"    => false,
       ":foo"   => true,  # segment is a key/value that matches the given key expr
@@ -156,4 +164,29 @@ RSpec.describe CheckPlease::PathSegment do
       "foo=42" => false, # key/val exprs can't match other key/val exprs
     )
   end
+
+  describe "created with '*'" do
+    subject { described_class.new('*') }
+
+    has_these_basic_properties(
+      :empty?        => false,
+      :name          => "*",
+      :key           => nil,
+      :key_value     => nil,
+      :key_expr?     => false,
+      :key_val_expr? => false,
+      :splat?        => true,
+    )
+
+    match_eh_returns(
+      ""       => false,
+      "*"      => true, # wildcard matches wildcard
+      "foo"    => true, # wildcard matches wildcard
+      "bar"    => true,
+      ":foo"   => true,
+      "foo=23" => true,
+      "foo=42" => true,
+    )
+  end
+
 end

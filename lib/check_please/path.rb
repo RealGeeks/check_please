@@ -124,7 +124,7 @@ module CheckPlease
     # (as of this writing, this should never actually happen, but I'm being thorough)
     def ancestor_on_list?(paths)
       paths.any? { |path|
-        ancestors.any? { |ancestor| ancestor == path }
+        ancestors.any? { |ancestor| ancestor.match?(path) }
       }
     end
 
@@ -153,7 +153,7 @@ module CheckPlease
 
     # O(n) check to see if the path itself is on a list
     def self_on_list?(paths)
-      paths.any? { |path| self == path }
+      paths.any? { |path| self.match?(path) }
     end
 
     def too_deep?(flags)

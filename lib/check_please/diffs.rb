@@ -47,6 +47,11 @@ module CheckPlease
       @list.map(&:attributes)
     end
 
+    def filter_by_flags(flags)
+      new_list = @list.reject { |diff| Path.new(diff.path).excluded?(flags) }
+      self.class.new(new_list, flags: flags)
+    end
+
     def to_s(flags = {})
       CheckPlease::Printers.render(self, flags)
     end

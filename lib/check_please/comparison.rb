@@ -13,7 +13,7 @@ module CheckPlease
       catch(:max_diffs_reached) do
         compare reference, candidate, CheckPlease::Path.root
       end
-      diffs
+      diffs.filter_by_flags(@flags)
     end
 
     private
