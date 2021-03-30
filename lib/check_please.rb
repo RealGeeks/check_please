@@ -177,4 +177,9 @@ module CheckPlease
     EOF
   end
 
+  Flags.define :normalize_values do |flag|
+    # NOTE: This flag is only accessible via the Ruby API.
+    #       See the README for documentation.
+  end
+
 end

@@ -210,13 +210,35 @@ module CheckPlease
         end
 
       def compare_others(ref, can, path)
-        if flags.indifferent_values
-          ref = stringify_symbol(ref)
-          can = stringify_symbol(can)
-        end
+        ref = normalize_value(path, ref)
+        can = normalize_value(path, can)
+
         return if ref == can
         record_diff ref, can, path, :mismatch
       end
+
+        def normalize_value(path, value)
+          if flags.indifferent_values
+            value = stringify_symbol(value)
+          end
+
+          if flags.normalize_values
+            # We assume that normalize_values is a hash of path expression strings to a proc, string, or symbol that will be used to normalize the value
+            _, normalizer = flags.normalize_values.detect { |path_string, a_proc|
+              path.match?(path_string)
+            }
+
+            case normalizer
+            when nil            ; value
+            when Proc           ; normalizer.call(value)
+            when String, Symbol ; value.send(normalizer)
+            else                ; raise ArgumentError, "Not sure how to use #{normalizer.inspect} to normalize #{value.inspect}"
+            end
+          else
+            return value
+          end
+
+        end
 
     def record_diff(ref, can, path, type)
       diff = Diff.new(type, path, ref, can)

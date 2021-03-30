@@ -750,4 +750,80 @@ RSpec.describe CheckPlease::Comparison do
     expect( diffs[2] ).to eq_diff( :missing, "/data/numbers/1", ref: 1,   can: nil )
     expect( diffs[3] ).to eq_diff( :extra,   "/data/numbers/3", ref: nil, can: 5 )
   end
+
+  describe "the normalize_values flag" do
+    it "transforms values that match a given path" do
+      iso8601 = "2021-03-15T12:34:56+00:00"
+      rfc2822 = "Mon, 15 Mar 2021 12:34:56 +0000"
+
+      reference = { id: 42, time: iso8601, number: 123 }
+      candidate = { id: 42, time: rfc2822, number: "123" }
+
+      # Make sure the diffs actually have what I expect
+      diffs = invoke!( reference, candidate )
+      expect( diffs.length ).to eq( 2 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/time",   ref: iso8601, can: rfc2822 )
+      expect( diffs[1] ).to eq_diff( :mismatch, "/number", ref: 123,     can: "123" )
+
+      require 'time'
+      # now actually test with normalize_values
+      diffs = invoke!( reference, candidate, normalize_values: {
+        "/time" => ->(v) { Time.parse(v) },
+      })
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/number", ref: 123,     can: "123" )
+
+      diffs = invoke!( reference, candidate, normalize_values: {
+        "/number" => ->(v) { v.to_i },
+      })
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/time",   ref: iso8601, can: rfc2822 )
+
+      diffs = invoke!( reference, candidate, normalize_values: {
+        "/time"   => ->(v) { Time.parse(v) },
+        "/number" => ->(v) { v.to_i },
+      })
+      expect( diffs.length ).to eq( 0 )
+    end
+
+    context "when comparing two lists, one of strings and the other of symbols" do
+      let(:list_of_strings) { { list: %w[ foo bar yak ] } }
+      let(:list_of_symbols) { { list: %i[ foo bar yak ] } }
+
+      def invoke_with!(paths_to_procs = {})
+        invoke!( list_of_strings, list_of_symbols, normalize_values: paths_to_procs )
+      end
+
+      before do
+        diffs = invoke!( list_of_strings, list_of_symbols )
+        expect( diffs.length ).to eq( 3 )
+        expect( diffs[0] ).to eq_diff( :mismatch, "/list/1", ref: "foo", can: :foo )
+        expect( diffs[1] ).to eq_diff( :mismatch, "/list/2", ref: "bar", can: :bar )
+        expect( diffs[2] ).to eq_diff( :mismatch, "/list/3", ref: "yak", can: :yak )
+      end
+
+      it "works with path expressions" do
+        diffs = invoke_with!(
+          "/list/*" => ->(v) { v.to_s },
+        )
+        expect( diffs.length ).to eq( 0 )
+      end
+
+      it "works with symbol values instead of procs" do
+        diffs = invoke_with!(
+          "/list/*" => :to_s,
+        )
+        expect( diffs.length ).to eq( 0 )
+      end
+
+      it "works with string values instead of procs" do
+        diffs = invoke_with!(
+          "/list/*" => "to_s",
+        )
+        expect( diffs.length ).to eq( 0 )
+      end
+    end
+
+  end
+
 end

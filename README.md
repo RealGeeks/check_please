@@ -22,6 +22,7 @@ structures parsed from either of those.
          * [Repeatable Flags](#repeatable-flags)
          * [Expanded Documentation for Specific Flags](#expanded-documentation-for-specific-flags)
             * [Flag: match_by_key](#flag-match_by_key)
+            * [Flag: normalize_values](#flag-normalize_values)
    * [TODO (maybe)](#todo-maybe)
    * [Development](#development)
    * [Contributing](#contributing)
@@ -419,6 +420,37 @@ the following path expression: `/authors/id=1/books/isbn=12345`
 
 **This syntax is intended to be readable by humans first.**  If you need to
 build tooling that consumes it... well, I'm open to suggestions.  :)
+
+#### Flag: `normalize_values`
+
+NOTE: This flag is only accessible via the Ruby API.
+(I have no idea how to reasonably express it in a CLI flag.)
+
+Before comparing values at specified paths, normalize both values using
+the provided message or Proc.
+
+To use an example from the tests, the following reference/candidate pair would
+normally create three "mismatch" diffs:
+
+```ruby
+  ref = { list: [ "foo", "bar", "yak" ] }
+  can = { list: [ :foo,  :bar,  :yak ] }
+```
+
+However, the values can be converted to String before comparison via any of the following:
+
+```ruby
+  CheckPlease.diff(ref, can, normalize_values: { "/list/*" => ->(v) { v.to_s } })
+  CheckPlease.diff(ref, can, normalize_values: { "/list/*" => :to_s })
+  CheckPlease.diff(ref, can, normalize_values: { "/list/*" => "to_s" })
+```
+
+Note that the value of the flag is a Hash.
+* Its keys must be strings representing path expressions.
+* If the value associated with a given path is a lambda/proc, it will be
+  called with both the reference value and the candidate value.
+* If the value is a String or Symbol, it will be sent as a message to
+  both the reference and candidate values using Object#send.
 
 -----
 
