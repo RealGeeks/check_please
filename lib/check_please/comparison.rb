@@ -210,10 +210,10 @@ module CheckPlease
         end
 
       def compare_others(ref, can, path)
-        ref = normalize_value(path, ref)
-        can = normalize_value(path, can)
+        ref_prime = normalize_value(path, ref)
+        can_prime = normalize_value(path, can)
+        return if ref_prime == can_prime
 
-        return if ref == can
         record_diff ref, can, path, :mismatch
       end
 

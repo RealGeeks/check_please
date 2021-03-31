@@ -786,6 +786,22 @@ RSpec.describe CheckPlease::Comparison do
       expect( diffs.length ).to eq( 0 )
     end
 
+    it "reports the un-transformed value on transformed diffs" do
+      reference = { id: 42, number: 123 }
+      candidate = { id: 42, number: "234" }
+
+      # Make sure the diffs actually have what I expect
+      diffs = invoke!( reference, candidate )
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/number", ref: 123, can: "234" )
+
+      diffs = invoke!( reference, candidate, normalize_values: {
+        "/number" => ->(v) { v.to_i },
+      })
+      expect( diffs.length ).to eq( 1 )
+      expect( diffs[0] ).to eq_diff( :mismatch, "/number", ref: 123, can: "234" )
+    end
+
     context "when comparing two lists, one of strings and the other of symbols" do
       let(:list_of_strings) { { list: %w[ foo bar yak ] } }
       let(:list_of_symbols) { { list: %i[ foo bar yak ] } }
